@@ -26,10 +26,43 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// Copyright (C) 2011  Dmitri Nikulin
+//
+// This file is part of Vijil.
+//
+// Vijil is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Vijil is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with Vijil.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Repository:     https://github.com/dnikulin/vijil
+// Email:          dnikulin+vijil@gmail.com
+
 package org.incava.util.diff;
 
 import java.util.*;
 
+import com.dnikulin.vijil.tools.Integers;
+
+class Link {
+    public final Link next;
+    public final int i;
+    public final int j;
+
+    public Link(Link next, int i, int j) {
+        this.next = next;
+        this.i = i;
+        this.j = j;
+    }
+}
 
 /**
  * Compares two lists, returning a list of the additions, changes, and deletions
@@ -49,12 +82,12 @@ public class Diff<Type>
     /**
      * The source list, AKA the "from" values.
      */
-    protected List<Type> a;
+    protected Type[] a;
 
     /**
      * The target list, AKA the "to" values.
      */
-    protected List<Type> b;
+    protected Type[] b;
 
     /**
      * The list of differences, as <code>Difference</code> instances.
@@ -74,15 +107,8 @@ public class Diff<Type>
     /**
      * The thresholds.
      */
-    private TreeMap<Integer, Integer> thresh;
-
-    /**
-     * Constructs the Diff object for the two arrays, using the given comparator.
-     */
-    public Diff(Type[] a, Type[] b, Comparator<Type> comp)
-    {
-        this(Arrays.asList(a), Arrays.asList(b), comp);
-    }
+    private int[] thresh;
+    private int lastKey;
 
     /**
      * Constructs the Diff object for the two arrays, using the default
@@ -97,22 +123,13 @@ public class Diff<Type>
     /**
      * Constructs the Diff object for the two lists, using the given comparator.
      */
-    public Diff(List<Type> a, List<Type> b, Comparator<Type> comp)
+    public Diff(Type[] a, Type[] b, Comparator<Type> comp)
     {
         this.a = a;
         this.b = b;
         this.comparator = comp;
         this.thresh = null;
-    }
-
-    /**
-     * Constructs the Diff object for the two lists, using the default
-     * comparison mechanism between the objects, such as <code>equals</code> and
-     * <code>compareTo</code>.
-     */
-    public Diff(List<Type> a, List<Type> b)
-    {
-        this(a, b, null);
+        lastKey = -1;
     }
 
     /**
@@ -137,19 +154,19 @@ public class Diff<Type>
      */
     protected void traverseSequences()
     {
-        Integer[] matches = getLongestCommonSubsequences();
+        int[] matches = getLongestCommonSubsequences();
 
-        int lastA = a.size() - 1;
-        int lastB = b.size() - 1;
+        int lastA = a.length - 1;
+        int lastB = b.length - 1;
         int bi = 0;
         int ai;
 
         int lastMatch = matches.length - 1;
 
         for (ai = 0; ai <= lastMatch; ++ai) {
-            Integer bLine = matches[ai];
+            int bLine = matches[ai];
 
-            if (bLine == null) {
+            if (bLine < 0) {
                 onANotB(ai, bi);
             }
             else {
@@ -288,160 +305,140 @@ public class Diff<Type>
     /**
      * Returns an array of the longest common subsequences.
      */
-    public Integer[] getLongestCommonSubsequences()
+    public int[] getLongestCommonSubsequences()
     {
         int aStart = 0;
-        int aEnd = a.size() - 1;
+        int aEnd = a.length - 1;
 
         int bStart = 0;
-        int bEnd = b.size() - 1;
+        int bEnd = b.length - 1;
 
-        TreeMap<Integer, Integer> matches = new TreeMap<Integer, Integer>();
+        int[] matches = new int[Math.max(a.length, b.length)];
+        thresh = new int[matches.length];
 
-        while (aStart <= aEnd && bStart <= bEnd && equals(a.get(aStart), b.get(bStart))) {
-            matches.put(aStart++, bStart++);
+        Arrays.fill(matches, -1);
+        Arrays.fill(thresh,  -1);
+
+        int lastKeyMatches = -1;
+        lastKey = -1;
+
+        while (aStart <= aEnd && bStart <= bEnd && equals(a[aStart], b[bStart])) {
+            lastKeyMatches = Math.max(lastKeyMatches, aStart);
+            matches[aStart++] = bStart++;
         }
 
-        while (aStart <= aEnd && bStart <= bEnd && equals(a.get(aEnd), b.get(bEnd))) {
-            matches.put(aEnd--, bEnd--);
+        while (aStart <= aEnd && bStart <= bEnd && equals(a[aEnd], b[bEnd])) {
+            lastKeyMatches = Math.max(lastKeyMatches, aEnd);
+            matches[aEnd--] = bEnd--;
         }
 
-        Map<Type, List<Integer>> bMatches = null;
-        if (comparator == null) {
-            if (a.size() > 0 && a.get(0) instanceof Comparable) {
-                // this uses the Comparable interface
-                bMatches = new TreeMap<Type, List<Integer>>();
-            }
-            else {
-                // this just uses hashCode()
-                bMatches = new HashMap<Type, List<Integer>>();
-            }
-        }
-        else {
-            // we don't really want them sorted, but this is the only Map
-            // implementation (as of JDK 1.4) that takes a comparator.
-            bMatches = new TreeMap<Type, List<Integer>>(comparator);
-        }
+        HashMap<Type, Integers> bMatches = new HashMap<Type, Integers>();
 
         for (int bi = bStart; bi <= bEnd; ++bi) {
-            Type         element    = b.get(bi);
+            Type          element   = b[bi];
             Type          key       = element;
-            List<Integer> positions = bMatches.get(key);
+            Integers      positions = bMatches.get(key);
 
             if (positions == null) {
-                positions = new ArrayList<Integer>();
+                positions = new Integers();
                 bMatches.put(key, positions);
             }
 
             positions.add(bi);
         }
 
-        thresh = new TreeMap<Integer, Integer>();
-        Map<Integer, Object[]> links = new HashMap<Integer, Object[]>();
+        Link[] links = new Link[matches.length];
 
         for (int i = aStart; i <= aEnd; ++i) {
-            Type aElement  = a.get(i);
-            List<Integer> positions = bMatches.get(aElement);
+            Type     aElement  = a[i];
+            Integers positions = bMatches.get(aElement);
 
             if (positions != null) {
-                Integer  k   = 0;
-                ListIterator<Integer> pit = positions.listIterator(positions.size());
-                while (pit.hasPrevious()) {
-                    Integer j = pit.previous();
+                int  k   = 0;
+
+                for (int n = positions.count - 1; n >= 0; n--) {
+                    int j = positions.data[n];
 
                     k = insert(j, k);
 
-                    if (k == null) {
+                    if (k < 0) {
                         // nothing
                     }
                     else {
-                        Object value = k > 0 ? links.get(k - 1) : null;
-                        links.put(k, new Object[] { value, i, j });
+                        Link next = k > 0 ? links[k - 1] : null;
+                        links[k] = new Link(next, i, j);
                     }
                 }
             }
         }
 
-        if (thresh.size() > 0) {
-            Integer  ti   = thresh.lastKey();
-            Object[] link = (Object[])links.get(ti);
+        if (lastKey >= 0) {
+            int      ti   = lastKey;
+            Link     link = links[ti];
             while (link != null) {
-                Integer x = (Integer)link[1];
-                Integer y = (Integer)link[2];
-                matches.put(x, y);
-                link = (Object[])link[0];
+                matches[link.i] = link.j;
+                lastKeyMatches = Math.max(lastKeyMatches, link.i);
+                link = link.next;
             }
         }
 
-        int       size = matches.size() == 0 ? 0 : 1 + matches.lastKey();
-        Integer[] ary  = new Integer[size];
-        for (Integer idx : matches.keySet()) {
-            Integer val = matches.get(idx);
-            ary[idx] = val;
-        }
-        return ary;
+        int size = 1 + lastKeyMatches;
+        return Arrays.copyOf(matches, size);
     }
 
     /**
      * Returns whether the integer is not zero (including if it is not null).
      */
-    protected static boolean isNonzero(Integer i)
+    protected static boolean isNonzero(int i)
     {
-        return i != null && i != 0;
+        return i > 0;
     }
 
     /**
      * Returns whether the value in the map for the given index is greater than
      * the given value.
      */
-    protected boolean isGreaterThan(Integer index, Integer val)
+    protected boolean isGreaterThan(int index, int val)
     {
-        Integer lhs = thresh.get(index);
-        return lhs != null && val != null && lhs.compareTo(val) > 0;
+        return (index >= 0) && (val >= 0) && (thresh[index] > val);
     }
 
     /**
      * Returns whether the value in the map for the given index is less than
      * the given value.
      */
-    protected boolean isLessThan(Integer index, Integer val)
+    protected boolean isLessThan(int index, int val)
     {
-        Integer lhs = thresh.get(index);
-        return lhs != null && (val == null || lhs.compareTo(val) < 0);
+        if (index < 0) return false;
+        int lhs = thresh[index];
+        return (lhs >= 0) && ((val < 0) || (lhs < val));
     }
 
     /**
      * Returns the value for the greatest key in the map.
      */
-    protected Integer getLastValue()
+    protected int getLastValue()
     {
-        return thresh.get(thresh.lastKey());
+        return thresh[lastKey];
     }
 
     /**
      * Adds the given value to the "end" of the threshold map, that is, with the
      * greatest index/key.
      */
-    protected void append(Integer value)
+    protected void append(int value)
     {
-        Integer addIdx = null;
-        if (thresh.size() == 0) {
-            addIdx = 0;
-        }
-        else {
-            Integer lastKey = thresh.lastKey();
-            addIdx = lastKey + 1;
-        }
-        thresh.put(addIdx, value);
+        thresh[++lastKey] = value;
     }
 
     /**
      * Inserts the given values into the threshold map.
      */
-    protected Integer insert(Integer j, Integer k)
+    protected int insert(int j, int k)
     {
         if (isNonzero(k) && isGreaterThan(k, j) && isLessThan(k - 1, j)) {
-            thresh.put(k, j);
+            thresh[k] = j;
+            lastKey(k);
         }
         else {
             int high = -1;
@@ -449,12 +446,12 @@ public class Diff<Type>
             if (isNonzero(k)) {
                 high = k;
             }
-            else if (thresh.size() > 0) {
-                high = thresh.lastKey();
+            else if (lastKey >= 0) {
+                high = lastKey;
             }
 
             // off the end?
-            if (high == -1 || j.compareTo(getLastValue()) > 0) {
+            if ((high == -1) || (j > getLastValue())) {
                 append(j);
                 k = high + 1;
             }
@@ -464,11 +461,11 @@ public class Diff<Type>
 
                 while (low <= high) {
                     int     index = (high + low) / 2;
-                    Integer val   = thresh.get(index);
-                    int     cmp   = j.compareTo(val);
+                    int     val   = thresh[index];
+                    int     cmp   = (j - val);
 
                     if (cmp == 0) {
-                        return null;
+                        return -1;
                     }
                     else if (cmp > 0) {
                         low = index + 1;
@@ -478,11 +475,17 @@ public class Diff<Type>
                     }
                 }
 
-                thresh.put(low, j);
+                thresh[low] = j;
+                lastKey(low);
+
                 k = low;
             }
         }
 
         return k;
+    }
+
+    private void lastKey(int now) {
+        lastKey = Math.max(lastKey, now);
     }
 }
