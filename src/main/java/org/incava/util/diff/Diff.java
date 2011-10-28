@@ -145,7 +145,7 @@ public class Diff<Type>
         int ai;
 
         int lastMatch = matches.length - 1;
-        
+
         for (ai = 0; ai <= lastMatch; ++ai) {
             Integer bLine = matches[ai];
 
@@ -284,7 +284,7 @@ public class Diff<Type>
     {
         return comparator == null ? x.equals(y) : comparator.compare(x, y) == 0;
     }
-    
+
     /**
      * Returns an array of the longest common subsequences.
      */
@@ -327,12 +327,12 @@ public class Diff<Type>
             Type         element    = b.get(bi);
             Type          key       = element;
             List<Integer> positions = bMatches.get(key);
-            
+
             if (positions == null) {
                 positions = new ArrayList<Integer>();
                 bMatches.put(key, positions);
             }
-            
+
             positions.add(bi);
         }
 
@@ -357,7 +357,7 @@ public class Diff<Type>
                     else {
                         Object value = k > 0 ? links.get(k - 1) : null;
                         links.put(k, new Object[] { value, i, j });
-                    }   
+                    }
                 }
             }
         }
@@ -445,7 +445,7 @@ public class Diff<Type>
         }
         else {
             int high = -1;
-            
+
             if (isNonzero(k)) {
                 high = k;
             }
@@ -461,7 +461,7 @@ public class Diff<Type>
             else {
                 // binary search for insertion point:
                 int low = 0;
-        
+
                 while (low <= high) {
                     int     index = (high + low) / 2;
                     Integer val   = thresh.get(index);
@@ -477,7 +477,7 @@ public class Diff<Type>
                         high = index - 1;
                     }
                 }
-        
+
                 thresh.put(low, j);
                 k = low;
             }

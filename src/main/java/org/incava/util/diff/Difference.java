@@ -40,7 +40,7 @@ package org.incava.util.diff;
 public class Difference
 {
     public static final int NONE = -1;
-    
+
     /**
      * The point at which the deletion starts.
      */
@@ -138,9 +138,9 @@ public class Difference
         if (obj instanceof Difference) {
             Difference other = (Difference)obj;
 
-            return (delStart == other.delStart && 
-                    delEnd   == other.delEnd && 
-                    addStart == other.addStart && 
+            return (delStart == other.delStart &&
+                    delEnd   == other.delEnd &&
+                    addStart == other.addStart &&
                     addEnd   == other.addEnd);
         }
         else {
