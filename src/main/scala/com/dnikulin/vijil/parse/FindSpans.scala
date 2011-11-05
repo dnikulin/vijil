@@ -156,7 +156,7 @@ object FindSpans {
                          dropWhile(_.isLetter == false).
                          takeWhile(_.isWhitespace == false)
 
-          if (lastWord.last.isUpper == true) {
+          if ((lastWord.length > 0) && (lastWord.last.isUpper == true)) {
             spans.dropRight(1) ::: join(lastSpan, thisSpan) :: Nil
           } else {
             // Keep this span as-is.
