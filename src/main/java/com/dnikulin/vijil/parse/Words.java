@@ -31,14 +31,19 @@ public final class Words {
     /** True iff the dictionary will automatically create requested lemmas. */
     public  final boolean                  isFilling;
 
+    /** True iff the dictionary will skip stopwords when parsing. */
+    public  final boolean                  skipStopwords;
+
     private final TextModelBuilder         builder;
     private final ArrayList<Lemma>         lemmaList;
     private final HashMap<String, Lemma>   lemmas;
 
     private int nextSynset;
 
-    public Words(boolean isFilling) {
+    public Words(boolean isFilling, boolean skipStopwords) {
         this.isFilling  = isFilling;
+        this.skipStopwords = skipStopwords;
+
         this.builder    = new TextModelBuilder();
         this.lemmaList  = new ArrayList<Lemma>();
         this.lemmas     = new HashMap<String, Lemma>();
@@ -47,6 +52,10 @@ public final class Words {
         // Fill sentinel area with dummy lemmas.
         for (int code = 0; code <= Symbols.offset; code++)
             lemmaList.add(new Lemma(code));
+    }
+
+    public Words(boolean isFilling) {
+        this(isFilling, true); // Skipping by default.
     }
 
     public Words() {
@@ -137,9 +146,11 @@ public final class Words {
                     if (lemma == null)
                         continue;
 
-                    // Check if lemma is a stopword.
-                    if (lemma.stopword == true)
-                        continue;
+                    if (skipStopwords == true) {
+                        // Check if lemma is a stopword.
+                        if (lemma.stopword == true)
+                            continue;
+                    }
 
                     // Record lemma symbol and span.
                     builder.add(lemma.symbol, offset, (byte) span);

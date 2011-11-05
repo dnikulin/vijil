@@ -38,6 +38,9 @@ class TestWords {
     // Must default to non-filling.
     assertFalse(words.isFilling)
 
+    // Must default to skipping.
+    assertTrue(words.skipStopwords)
+
     def read(reader: Reader, leaf: String): Unit =
       fromFile(words, reader, leaf)
 
