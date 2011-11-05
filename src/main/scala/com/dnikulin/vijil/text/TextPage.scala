@@ -23,7 +23,9 @@ package com.dnikulin.vijil.text
 import scala.collection.mutable.ArrayBuilder
 import scala.collection.mutable.BitSet
 
-case class TextPage(text: TextFile, number: Int, minLeaf: Int, maxLeaf: Int) {
+import com.dnikulin.vijil.traits.HasHash
+
+case class TextPage(text: TextFile, number: Int, minLeaf: Int, maxLeaf: Int) extends HasHash {
   require(number  >= 1)
   require(minLeaf >= 0)
   require(maxLeaf >  minLeaf)
@@ -33,6 +35,8 @@ case class TextPage(text: TextFile, number: Int, minLeaf: Int, maxLeaf: Int) {
   val cmin   = leaves.head.min
   val cmax   = leaves.last.max
   val span   = TextSpan(text, cmin, cmax)
+
+  override val hash = ("t%s_p%d".format(text.hash, number))
 }
 
 object TextPage {
