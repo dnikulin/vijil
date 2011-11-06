@@ -23,6 +23,7 @@ package com.dnikulin.vijil.text
 import scala.collection.mutable.ArrayBuilder
 import scala.collection.mutable.BitSet
 
+import com.dnikulin.vijil.parse.StringSpan
 import com.dnikulin.vijil.traits.HasHash
 
 case class TextPage(text: TextFile, number: Int, minLeaf: Int, maxLeaf: Int) extends HasHash {
@@ -85,6 +86,12 @@ object TextPage {
     return marks
   }
 
+  def find(pages: IndexedSeq[TextPage], spans: IndexedSeq[StringSpan]): BitSet = {
+    val marks = new BitSet
+    find(marks, pages, spans)
+    return marks
+  }
+
   def find(marks: BitSet, pages: IndexedSeq[TextPage], positions: Array[Int]) {
     var pi = 0
     var ci = 0
@@ -103,6 +110,29 @@ object TextPage {
 
         // Advance in pages until matching.
         while ((pi < pages.length) && (positions(ci) >= pages(pi).cmax))
+          pi += 1
+      }
+    }
+  }
+
+  def find(marks: BitSet, pages: IndexedSeq[TextPage], spans: IndexedSeq[StringSpan]) {
+    var pi = 0
+    var ci = 0
+
+    while ((pi < pages.length) && (ci < spans.length)) {
+      // Advance in spans until matching.
+      while ((ci < spans.length) && (spans(ci).max < pages(pi).cmin))
+        ci += 1
+
+      if (ci < spans.length) {
+        // Advance in pages while matching.
+        while ((pi < pages.length) && pages(pi).span.includes(spans(ci))) {
+          marks.add(pages(pi).number)
+          pi += 1
+        }
+
+        // Advance in pages until matching.
+        while ((pi < pages.length) && (spans(ci).min >= pages(pi).cmax))
           pi += 1
       }
     }

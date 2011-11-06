@@ -36,6 +36,11 @@ trait Span[T <: Span[T]] {
 
   def includes(ci: Int): Boolean =
     ((min <= ci) && (ci < max))
+
+  def includes(that: Span[T]): Boolean = {
+    this.includes(that.min) || this.includes(that.max - 1) ||
+    that.includes(this.min) || that.includes(this.max - 1)
+  }
 }
 
 trait HasSpans[T <: Span[_]] {
