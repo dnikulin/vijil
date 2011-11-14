@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 
 public final class CleanString {
     public static final Pattern weirdWhitePattern =
-        Pattern.compile("[\u00a0\u2002\u2003\u2009]+");
+        Pattern.compile("[\\s\u00a0\u2002\u2003\u2009]+");
 
     public static final Pattern uniJunkPattern =
         Pattern.compile("[\uf000-\uffff]+");
