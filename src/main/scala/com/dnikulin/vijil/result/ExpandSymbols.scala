@@ -48,8 +48,7 @@ protected final case class Expander(text: TextModel, span: LinkSpan, size: Int) 
   var node : LinkSpan = span
 
   def update(set2: LinkSpanSet) {
-    val links = new Array[LinkSpan](span.links.length)
-    node = new LinkSpan(set2, span.code, span.hash, lmin1, lmax1, links)
+    node = new LinkSpan(set2, span.code, span.hash, lmin1, lmax1, span.links)
   }
 }
 
@@ -90,7 +89,7 @@ object ExpandSymbols {
 
         var ispan2 = 0
         while (ispan2 < span1.links.length) {
-          val span2  = span1.links(ispan2)
+          val span2  = set.spans(span1.links(ispan2))
           val expan2 = links(span2.code)
 
           if (expan1.span.hash != expan2.span.hash)
@@ -109,25 +108,8 @@ object ExpandSymbols {
         val span1  = spans(ispan1)
         val expan1 = links(span1.code)
         expan1.update(oset)
-        ispan1 += 1
-      }
 
-      ispan1 = 0
-      while (ispan1 < spans.length) {
-        val span1  = spans(ispan1)
-        val espan1 = links(span1.code).node
-        assert(espan1.set eq oset)
-
-        var ispan2 = 0
-        while (ispan2 < span1.links.length) {
-          val span2  = span1.links(ispan2)
-          val espan2 = links(span2.code).node
-          assert(espan2.set eq oset)
-          espan1.links(ispan2) = espan2
-          ispan2 += 1
-        }
-
-        oset.spans(ispan1) = espan1
+        oset.spans(ispan1) = expan1.node
         ispan1 += 1
       }
 
