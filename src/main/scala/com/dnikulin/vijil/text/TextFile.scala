@@ -26,6 +26,7 @@ import com.dnikulin.vijil.file.Hash
 import com.dnikulin.vijil.model.TextModel
 import com.dnikulin.vijil.parse.StringSpan
 import com.dnikulin.vijil.parse.Words
+import com.dnikulin.vijil.render.NodeSpan
 import com.dnikulin.vijil.result.LinkSpan
 import com.dnikulin.vijil.traits._
 import com.dnikulin.vijil.tools.Empty
@@ -35,8 +36,9 @@ case class TextFile(
   override val hash:    String,
   override val tags:    List[Tag]      = Nil,
   override val spans:   List[TextSpan] = Nil,
-  override val notes:   List[TextNote] = Nil
-) extends KeyedByHash[TextFile] with HasData[String] with HasTags[TextFile] with HasSpans[TextSpan] with HasTextNotes with ToJson {
+  override val notes:   List[TextNote] = Nil,
+  override val marks:   List[NodeSpan] = Nil
+) extends KeyedByHash[TextFile] with HasData[String] with HasTags[TextFile] with HasSpans[TextSpan] with HasTextNotes with HasMarks with ToJson {
 
   val name: String =
     Array("Title", "TextName", "URL").
@@ -48,11 +50,11 @@ case class TextFile(
     spans.flatMap(_.leafSpans)
 
   def this(hash: String, tags: List[Tag]) {
-    this(Empty.string, hash, tags, Nil, Nil)
+    this(Empty.string, hash, tags, Nil, Nil, Nil)
   }
 
   override def addTag(tag: Tag): TextFile =
-    new TextFile(data, hash, tag :: tags, spans, notes)
+    new TextFile(data, hash, tag :: tags, spans, notes, marks)
 
   def findLeaf(min: Int): Option[TextSpan] =
     leaves.find(_.min == min)
