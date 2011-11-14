@@ -68,12 +68,9 @@ object SpanPair extends FromJson[SpanPair] {
 
     // Create pairs for all linked spans.
     val pairs = List.newBuilder[SpanPair]
-    for (set     <- expand;
-         mspan1  <- set.spans;
-         tspan1  <- linked.get(mspan1.code);
-         imspan2 <- mspan1.links;
-         mspan2  =  set.spans(imspan2);
-         tspan2  <- linked.get(mspan2.code)) {
+    for (set    <- expand;
+         mspan1 <- set.spans;    tspan1 <- linked.get(mspan1.code);
+         mspan2 <- mspan1.links; tspan2 <- linked.get(mspan2.code)) {
 
       // Verify that the links are between distinct texts.
       assert (mspan1.hash != mspan2.hash)

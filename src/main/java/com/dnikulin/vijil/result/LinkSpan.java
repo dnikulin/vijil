@@ -20,8 +20,6 @@
 
 package com.dnikulin.vijil.result;
 
-import com.dnikulin.vijil.tools.Empty;
-
 public final class LinkSpan {
     public static final LinkSpan [] none = new LinkSpan[0];
 
@@ -33,10 +31,9 @@ public final class LinkSpan {
     public final int          max;
     public final int          len;
 
-    // Link integers are indices within LinkSpanSet.spans
-    public final int []       links;
+    public final LinkSpan []  links;
 
-    public LinkSpan(LinkSpanSet set, int code, String hash, int min, int max, int[] links) {
+    public LinkSpan(LinkSpanSet set, int code, String hash, int min, int max, LinkSpan[] links) {
         assert (set   != null);
         assert (hash  != null);
         assert (links != null);
@@ -55,7 +52,7 @@ public final class LinkSpan {
     }
 
     public LinkSpan(int code, String hash, int min, int max) {
-        this(LinkSpanSet.sentinel, code, hash, min, max, Empty.ints);
+        this(LinkSpanSet.sentinel, code, hash, min, max, none);
     }
 
     @Override
@@ -86,8 +83,7 @@ public final class LinkSpan {
     }
 
     public boolean isToText(String hash) {
-        for (int ilink : links) {
-            final LinkSpan link = set.spans[ilink];
+        for (LinkSpan link : links) {
             if (link.isFromText(hash))
                 return true;
         }

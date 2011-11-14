@@ -111,7 +111,7 @@ final class GraphSpan {
 
     public LinkSpan result(LinkSpanSet dset, int dcode) {
         if (result == null) {
-            int [] dlinks = new int[links.size()];
+            LinkSpan [] dlinks = new LinkSpan[links.size()];
             result = new LinkSpan(dset, dcode, hash, min, max, dlinks);
         }
         return result;
@@ -343,11 +343,8 @@ public final class LinkSpanGraph implements MatchVisitor {
         final GraphView view1 = makeView(lspan1.hash);
         final GraphSpan span1 = view1.makeSpan(lspan1.min, lspan1.max, null);
 
-        for (int ilspan2 : lspan1.links) {
-            final LinkSpan lspan2 = lspan1.set.spans[ilspan2];
-
-            assert (lspan1     != lspan2    );
-            assert (lspan1.set == lspan2.set);
+        for (LinkSpan lspan2 : lspan1.links) {
+            assert (lspan2.set == lspan1.set);
 
             final GraphView view2 = makeView(lspan2.hash);
             view2.makeSpan(lspan2.min, lspan2.max, span1);
@@ -383,12 +380,9 @@ public final class LinkSpanGraph implements MatchVisitor {
                         final GraphView view1 = makeView(lspan1.hash);
                         final GraphSpan span1 = view1.makeSpan(cmin1, cmax1, null);
 
-                        for (int ilspan2 : lspan1.links) {
-                            final LinkSpan lspan2 = lspan1.set.spans[ilspan2];
-
-                            assert (lspan1     != lspan2    );
-                            assert (lspan1.set == lspan2.set);
-                            assert (lspan1.hash.equals(lspan2.hash) == false);
+                        for (LinkSpan lspan2 : lspan1.links) {
+                            assert (lspan2.set == lspan1.set);
+                            assert (lspan2.hash.equals(lspan1.hash) == false);
 
                             // Find matching text model.
                             for (TextModel model2 : models) {
@@ -482,20 +476,8 @@ public final class LinkSpanGraph implements MatchVisitor {
                 // Populate links.
                 final LinkSpan lspan = dset.spans[iout2++];
                 int ilink = 0;
-                for (GraphSpan link : span.links()) {
-                    // Recall LinkSpan created for this GraphSpan.
-                    final LinkSpan result = link.result();
-
-                    // Find the same LinkSpan in the LinkSpanSet.
-                    for (int ispan = 0; ispan < dset.spans.length; ispan++) {
-                        final LinkSpan lspan2 = dset.spans[ispan];
-                        if (lspan2 == result) {
-                            // Record the index within the LinkSpanSet.
-                            lspan.links[ilink++] = ispan;
-                            break;
-                        }
-                    }
-                }
+                for (GraphSpan link : span.links())
+                    lspan.links[ilink++] = link.result();
             }
 
             out[iout++] = dset;
