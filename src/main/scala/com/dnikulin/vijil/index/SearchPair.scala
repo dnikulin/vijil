@@ -26,7 +26,7 @@ import com.dnikulin.vijil.result.LinkSpanSet
 import com.dnikulin.vijil.result.SpanDomain
 
 object SearchPair {
-  def apply(texts1: List[TextModel], texts2: List[TextModel], index: MindexCore): Array[LinkSpanSet] = {
+  def apply(texts1: Seq[TextModel], texts2: Seq[TextModel], index: MindexCore): Array[LinkSpanSet] = {
     // Populate index.
     texts2.foreach(index.add)
 
@@ -40,9 +40,9 @@ object SearchPair {
     return buffer.result
   }
 
-  def apply(texts1: List[TextModel], texts2: List[TextModel], size: Int): Array[LinkSpanSet] =
+  def apply(texts1: Seq[TextModel], texts2: Seq[TextModel], size: Int): Array[LinkSpanSet] =
     apply(texts1, texts2, new Mindex(size))
 
-  def apply(texts1: List[TextModel], texts2: List[TextModel], model: StencilModel): Array[LinkSpanSet] =
+  def apply(texts1: Seq[TextModel], texts2: Seq[TextModel], model: StencilModel): Array[LinkSpanSet] =
     apply(texts1, texts2, new Stencils(model))
 }

@@ -26,7 +26,7 @@ import com.dnikulin.vijil.result.LinkSpanSet
 import com.dnikulin.vijil.result.SpanDomain
 
 object SearchSet {
-  def apply(texts: Array[TextModel], index: MindexCore): Array[LinkSpanSet] = {
+  def apply(texts: Seq[TextModel], index: MindexCore): Array[LinkSpanSet] = {
     // Sort so that larger texts come last.
     // The largest text won't be indexed at all.
     val stexts = texts.sortWith(_.size < _.size)
@@ -52,9 +52,9 @@ object SearchSet {
     return buffer.result
   }
 
-  def apply(texts: Array[TextModel], size: Int): Array[LinkSpanSet] =
+  def apply(texts: Seq[TextModel], size: Int): Array[LinkSpanSet] =
     apply(texts, new Mindex(size))
 
-  def apply(texts: Array[TextModel], model: StencilModel): Array[LinkSpanSet] =
+  def apply(texts: Seq[TextModel], model: StencilModel): Array[LinkSpanSet] =
     apply(texts, new Stencils(model))
 }

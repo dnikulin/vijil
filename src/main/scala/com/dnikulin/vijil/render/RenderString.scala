@@ -26,20 +26,21 @@ import com.dnikulin.vijil.parse.StringSpan
 import com.dnikulin.vijil.parse.PlainStringSpan
 
 object RenderString {
-  def apply(data: String, spans: List[NodeSpan]): NodeSeq =
+  def apply(data: String, spans: Seq[NodeSpan]): NodeSeq =
     apply(new PlainStringSpan(data), spans)
 
-  def apply(root: StringSpan, spans: List[NodeSpan]): NodeSeq = {
+  def apply(root: StringSpan, spans: Seq[NodeSpan]): NodeSeq = {
     // Order spans by depth, start (ascending) and end (descending).
     val sorted = spans.
+      toArray.
       filter(_.span.overlaps(root)).
       sortBy(s => (s.depth, s.span.min, -s.span.max))
 
     // Create list of all distinct depths, ordered so shallow is first.
     val depths = sorted.map(_.depth).toSet.toList.sorted
 
-    // Separate spans by depth.
-    val tree = depths.map(depth => sorted.filter(_.depth == depth).toArray)
+    // Separate spans by depth, keeping them in arrays.
+    val tree = depths.map(depth => sorted.filter(_.depth == depth))
 
     // Start rendering at shallowest depth.
     return renderTree(root, tree)

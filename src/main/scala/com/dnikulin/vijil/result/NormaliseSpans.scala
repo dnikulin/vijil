@@ -23,10 +23,10 @@ package com.dnikulin.vijil.result
 import com.dnikulin.vijil.model.TextModel
 
 object NormaliseSpans {
-  def apply(texts: Array[TextModel], sets: Array[LinkSpanSet]): Array[LinkSpanSet] = {
+  def apply(texts: Seq[TextModel], sets: Array[LinkSpanSet]): Array[LinkSpanSet] = {
     // Normalise from symbol domain to character domain.
     val mapper = new LinkSpanGraph(SpanDomain.CHARACTERS)
-    mapper.normalise(sets, texts)
+    mapper.normalise(sets, texts.toArray)
     return mapper.result
   }
 }

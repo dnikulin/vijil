@@ -128,7 +128,7 @@ object TextSpan extends FromJson[TextSpan] {
     apply(text, dspan.min, dspan.max)
   }
 
-  def apply(texts: List[TextFile], dspan: LinkSpan): Option[TextSpan] = {
+  def apply(texts: Seq[TextFile], dspan: LinkSpan): Option[TextSpan] = {
     require(dspan.set.domain == SpanDomain.CHARACTERS)
     texts.find(_.hash == dspan.hash).map(apply(_, dspan))
   }
