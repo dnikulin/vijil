@@ -116,8 +116,11 @@ object ReadTEI {
     // Check that all text content has been consumed.
     assert(cursor == data.length)
 
+    // Create extra tag to represent title for root span.
+    val tags2 = tags.filter(_.name == "Title").map(_.copy(name = "BlockName"))
+
     // Create root span to contain all text spans.
-    val span = new TextSpan(data, hash, 0, cursor, tags, parts)
+    val span = new TextSpan(data, hash, 0, cursor, tags2 ::: tags, parts)
 
     // Create TextFile.
     new TextFile(data, hash, tags, List(span), Nil, marks.result)
