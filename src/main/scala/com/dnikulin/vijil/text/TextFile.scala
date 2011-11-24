@@ -37,8 +37,9 @@ case class TextFile(
   override val tags:    List[Tag]      = Nil,
   override val spans:   List[TextSpan] = Nil,
   override val notes:   List[TextNote] = Nil,
-  override val marks:   List[NodeSpan] = Nil
-) extends KeyedByHash[TextFile] with HasData[String] with HasTags[TextFile] with HasSpans[TextSpan] with HasTextNotes with HasMarks with ToJson {
+  override val marks:   List[NodeSpan] = Nil,
+  override val runes:   List[Rune]     = Nil
+) extends KeyedByHash[TextFile] with HasData[String] with HasTags[TextFile] with HasSpans[TextSpan] with HasTextNotes with HasMarks with HasRunes with ToJson {
 
   val name: String =
     Array("Title", "TextName", "URL").
