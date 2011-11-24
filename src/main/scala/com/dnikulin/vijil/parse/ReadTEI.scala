@@ -194,6 +194,10 @@ object ReadTEI {
     case Elem(null, "note", _, _, _*) =>
       List(TeiSpan.note)
 
+    case Elem(null, "pb", _, _, _*) =>
+      for (number <- numbers(node))
+        yield TeiSpan.page(number)(_)
+
     case _ =>
       Nil
   }
@@ -202,7 +206,7 @@ object ReadTEI {
     // Interpret <pb n="1" /> element.
     case Elem(null, "pb", _, _, _*) =>
       // Convert to PageBreak rune.
-      for (number <- asInt((node \ "@n").text.trim).toList)
+      for (number <- numbers(node))
         yield PageBreak(number, cursor)
 
     case _ =>
@@ -219,6 +223,9 @@ object ReadTEI {
     case Elem(null, "item",  _, _, _*) => true
     case _                             => false
   }
+
+  def numbers(node: Node): List[Int] =
+    asInt((node \ "@n").text.trim).toList
 }
 
 object TeiSpan {
@@ -240,5 +247,9 @@ object TeiSpan {
   def note(nodes: NodeSeq): NodeSeq = {
     val string = ReadTEI.cleanText(nodes).trim
     <div class="tei_note" title={string}>Note</div>
+  }
+
+  def page(number: Int)(nodes: NodeSeq): NodeSeq = {
+    <div class="tei_note">Page {number}</div>
   }
 }
