@@ -24,8 +24,11 @@ import scala.xml._
 
 import java.util.regex.Pattern
 
+import net.liftweb.util.Helpers.asInt
+
 import com.dnikulin.vijil.render.NodeSpan
 import com.dnikulin.vijil.text._
+import com.dnikulin.vijil.traits.Rune
 import com.dnikulin.vijil.tools.CleanString
 
 object ReadTEI {
@@ -66,6 +69,9 @@ object ReadTEI {
     // Buffer for marks.
     val marks = List.newBuilder[NodeSpan]
 
+    // Buffer for runes.
+    val runes = List.newBuilder[Rune]
+
     // Prepare extraction inner function.
     def extract(node: Node): List[TextSpan] = node match {
       case Text(string) =>
@@ -98,6 +104,9 @@ object ReadTEI {
         // Create any node spans.
         marks ++= nodeSpans(node).map(NodeSpan(span, _))
 
+        // Create any text runes.
+        runes ++= nodeRunes(node, cursor)
+
         if (nodeMakeSpan(node)) {
           // Return new wrapping span.
           List(span)
@@ -123,7 +132,7 @@ object ReadTEI {
     val span = new TextSpan(data, hash, 0, cursor, tags2 ::: tags, parts)
 
     // Create TextFile.
-    new TextFile(data, hash, tags, List(span), Nil, marks.result)
+    new TextFile(data, hash, tags, List(span), Nil, marks.result, runes.result)
   }
 
   def cleanText(nodes: NodeSeq): String =
@@ -184,6 +193,17 @@ object ReadTEI {
 
     case Elem(null, "note", _, _, _*) =>
       List(TeiSpan.note)
+
+    case _ =>
+      Nil
+  }
+
+  def nodeRunes(node: Node, cursor: Int): List[Rune] = node match {
+    // Interpret <pb n="1" /> element.
+    case Elem(null, "pb", _, _, _*) =>
+      // Convert to PageBreak rune.
+      for (number <- asInt((node \ "@n").text.trim).toList)
+        yield PageBreak(number, cursor)
 
     case _ =>
       Nil
