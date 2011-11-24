@@ -130,7 +130,8 @@ object TextPage {
       val maxLeaf = ileaves(idx + 1)
 
       // Create the page.
-      TextPage(text, break.number, minLeaf, maxLeaf)
+      // Throw away the number, and use the raw index instead.
+      TextPage(text, idx + 1, minLeaf, maxLeaf)
     }
   }
 
