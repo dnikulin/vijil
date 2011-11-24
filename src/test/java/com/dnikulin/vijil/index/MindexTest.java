@@ -61,7 +61,7 @@ public class MindexTest {
             assertTrue(offsets[i]);
     }
 
-    private static TextModel makeBody() {
+    public static TextModel makeBody() {
         TextModelBuilder builder = new TextModelBuilder();
         assertEquals(builder.length(), 0);
 
