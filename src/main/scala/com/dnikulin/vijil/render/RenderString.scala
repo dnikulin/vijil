@@ -107,6 +107,10 @@ object RenderString {
         // Apply style function to inner nodes.
         nodes ++= wrapper(inner)
       }
+
+      // Render 0-character span.
+      if ((span.min == span.max) && (pos == span.min))
+        nodes ++= wrapper(NodeSeq.Empty)
     }
 
     // Pad final gap with deeper levels.

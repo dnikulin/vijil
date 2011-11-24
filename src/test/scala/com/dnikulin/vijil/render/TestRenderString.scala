@@ -96,6 +96,22 @@ class TestRenderString {
   }
 
   @Test
+  def testZeroChar1(): Unit = {
+    val spans = List(
+      wrap(line,  0,  5, identity),
+      wrap(line,  6, 14, bold),
+      wrap(line,  8,  8, italic), // 0-character span
+      wrap(line, 11, 17, italic),
+      wrap(line, 16, 18, bold),
+      wrap(line, 18, 24, empty)
+    )
+
+    val want = "plain <b>bo<i></i>ld <i>ita</i></b><i>li<b>c</b></i><b> </b> !"
+    val have = run(spans)
+    assertEquals(want, have)
+  }
+
+  @Test
   def testDepth(): Unit = {
     val spans = List(
       wrap(line,  6, 10, bold,   1),
