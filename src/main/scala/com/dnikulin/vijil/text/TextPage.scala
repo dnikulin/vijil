@@ -25,16 +25,25 @@ import scala.collection.mutable.BitSet
 
 import com.dnikulin.vijil.parse.StringSpan
 import com.dnikulin.vijil.traits.HasHash
+import com.dnikulin.vijil.traits.Rune
+
+/**
+ * A page break the starts a given page number at a given string data position.
+ *
+ * Use one per page directly in a TextFile, then TextPage.makePages()
+ * can interpret the runes to create the correct original page numbers.
+ */
+case class PageBreak(number: Int, position: Int) extends Rune
 
 case class TextPage(text: TextFile, number: Int, minLeaf: Int, maxLeaf: Int) extends HasHash {
   require(number  >= 1)
   require(minLeaf >= 0)
-  require(maxLeaf >  minLeaf)
+  require(maxLeaf >= minLeaf) // Allow zero leaves, but not "negative" number of leaves.
   require(maxLeaf <= text.leaves.length)
 
   val leaves = text.leaves.slice(minLeaf, maxLeaf)
-  val cmin   = leaves.head.min
-  val cmax   = leaves.last.max
+  val cmin   = text.leaves(minLeaf).min
+  val cmax   = text.leaves((maxLeaf - 1) max 0).max max cmin
   val span   = TextSpan(text, cmin, cmax)
 
   override val hash = ("t%s_p%d".format(text.hash, number))
@@ -44,13 +53,24 @@ object TextPage {
   val none = new Array[TextPage](0)
 
   def makePages(text: TextFile, clen: Int = 2000): IndexedSeq[TextPage] = {
+    // Find page break runes within the text.
+    val breaks = text.runesOfClass[PageBreak]
+
+    // If page breaks were found, use them.
+    if (breaks.isEmpty) makePagesByLength(text, clen)
+    else                makePagesByBreaks(text, breaks)
+  }
+
+  def makePagesByLength(text: TextFile, clen: Int = 2000): IndexedSeq[TextPage] = {
     val pages   = new ArrayBuilder.ofRef[TextPage]
 
     var number  = 1
     var length  = 0
     var minLeaf = 0
 
-    for ((leaf, index) <- text.leaves.zipWithIndex) {
+    val leaves = text.leaves.toArray
+
+    for ((leaf, index) <- leaves.zipWithIndex) {
       // Count leaf itself as 100 characters.
       length += 100
 
@@ -72,6 +92,79 @@ object TextPage {
     }
 
     return pages.result
+  }
+
+  def makePagesByBreaks(text: TextFile, breaks: Seq[PageBreak]): IndexedSeq[TextPage] = {
+    import System.err.{println => err}
+
+    // Sort pages by position in string data.
+    val sorted = breaks.toArray.sortWith(_.position < _.position)
+
+    // Keep leaves in an array.
+    val leaves = text.leaves.toArray
+
+    // Verify all page pairs for consistency.
+    sorted.reduce{(p1,p2) =>
+      if ((p1.number + 1) != p2.number) {
+        err("Text [%s] has page number [%d] followed by [%d]".
+            format(text.name, p1.number, p2.number))
+      }
+
+      if (p1.position >= p2.position) {
+        err("Text [%s] has position [%d] for page [%d] followed by [%d] for page [%d]".
+            format(text.name, p1.position, p1.number, p2.position, p2.number))
+      }
+
+      // Pass page 2 for next step of 'reduce'.
+      p2
+    }
+
+    // Zip breaks against leaves.
+    val ileaves = leavesForBreaks(sorted, leaves)
+
+    // The number of pages is the same as the number of breaks.
+    for ((break, idx) <- sorted.zipWithIndex) yield {
+      // Calculate minimum and maximum leaf for this page.
+      // leavesForBreaks() makes the first and last pages extend to the bounds.
+      val minLeaf = ileaves(idx)
+      val maxLeaf = ileaves(idx + 1)
+
+      // Create the page.
+      TextPage(text, break.number, minLeaf, maxLeaf)
+    }
+  }
+
+  private def leavesForBreaks(breaks: Array[PageBreak], leaves: Array[TextSpan]): Array[Int] = {
+    val ileaves = new ArrayBuilder.ofInt
+
+    // Record lower leaf bound.
+    // This makes the first page extend to the start.
+    ileaves += 0
+
+    // Skip first page break.
+    // First leaves may be skipped automatically, see below.
+    var ib = 1
+    var il = 1
+
+    while ((ib < breaks.length) && (il < leaves.length)) {
+      // Advance in leaves while the start is still before a page break.
+      while ((il < leaves.length) && (leaves(il).max < breaks(ib).position))
+        il += 1
+
+      if ((ib < breaks.length) && (il < leaves.length)) {
+        // Record the leaf index.
+        ileaves += il
+
+        // Advance in pages exactly once.
+        ib += 1
+      }
+    }
+
+    // Record upper leaf bound.
+    // This makes the last page extend to the end.
+    ileaves += leaves.length
+
+    return ileaves.result
   }
 
   def find(span: TextSpan): Option[TextPage] = {
