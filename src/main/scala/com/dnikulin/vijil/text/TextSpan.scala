@@ -90,6 +90,40 @@ case class TextSpan(
     return None
   }
 
+  def findLeaves(textSpan: StringSpan): IndexedSeq[TextSpan] = {
+    // No possible solution if this span does not overlap.
+    if (overlaps(textSpan) == false)
+      return ArrSeq.emptySeq
+
+    // Buffer for confirmed overlapping leaves.
+    val buffer = ArrSeq.newBuilder[TextSpan]
+
+    // Depth-first search function.
+    def search(root: TextSpan) {
+      if (root.spans.isEmpty) {
+        // Record root as a confirmed leaf.
+        buffer += root
+      } else {
+        // Iterate through all children of the root.
+        var ispan = 0
+        while (ispan < root.spans.length) {
+          val span = root.spans(ispan)
+          ispan += 1
+
+          // Recurse if the span overlaps.
+          if (span.overlaps(textSpan))
+            search(span)
+        }
+      }
+    }
+
+    // Start search from this span.
+    search(this)
+
+    // Return any leaves found.
+    buffer.result
+  }
+
   override def toJValue: JValue = {
     val jtags  =  tags.map(_.toJValue).toList
     val jspans = spans.map(_.toJValue).toList

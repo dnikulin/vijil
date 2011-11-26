@@ -71,7 +71,7 @@ case class TextFile(
     if (textSpan.data ne data)
       return ArrSeq.emptySeq
 
-    return leaves.filter(_.overlaps(textSpan))
+    return spans.flatMap(_.findLeaves(textSpan))
   }
 
   /** Reduce to only hash and tags. */
