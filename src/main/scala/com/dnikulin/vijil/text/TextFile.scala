@@ -29,16 +29,17 @@ import com.dnikulin.vijil.parse.Words
 import com.dnikulin.vijil.render.NodeSpan
 import com.dnikulin.vijil.result.LinkSpan
 import com.dnikulin.vijil.traits._
+import com.dnikulin.vijil.tools.ArrSeq
 import com.dnikulin.vijil.tools.Empty
 
 case class TextFile(
   override val data:    String,
   override val hash:    String,
-  override val tags:    List[Tag]      = Nil,
-  override val spans:   List[TextSpan] = Nil,
-  override val notes:   List[TextNote] = Nil,
-  override val marks:   List[NodeSpan] = Nil,
-  override val runes:   List[Rune]     = Nil
+  override val tags:    IndexedSeq[Tag]      = ArrSeq.emptySeq,
+  override val spans:   IndexedSeq[TextSpan] = ArrSeq.emptySeq,
+  override val notes:   IndexedSeq[TextNote] = ArrSeq.emptySeq,
+  override val marks:   IndexedSeq[NodeSpan] = ArrSeq.emptySeq,
+  override val runes:   IndexedSeq[Rune]     = ArrSeq.emptySeq
 ) extends KeyedByHash[TextFile] with HasData[String] with HasTags[TextFile] with HasSpans[TextSpan] with HasTextNotes with HasMarks with HasRunes with ToJson {
 
   val name: String =
@@ -47,29 +48,28 @@ case class TextFile(
     headOption.
     getOrElse(hash)
 
-  val leaves: List[TextSpan] =
+  val leaves: IndexedSeq[TextSpan] =
     spans.flatMap(_.leafSpans)
 
-  def this(hash: String, tags: List[Tag]) {
-    this(Empty.string, hash, tags, Nil, Nil, Nil)
-  }
+  def this(hash: String, tags: IndexedSeq[Tag]) =
+    this(Empty.string, hash, tags, ArrSeq.emptySeq, ArrSeq.emptySeq, ArrSeq.emptySeq)
 
   override def addTag(tag: Tag): TextFile =
-    new TextFile(data, hash, tag :: tags, spans, notes, marks)
+    new TextFile(data, hash, ArrSeq(tag) ++ tags, spans, notes, marks)
 
   def findLeaf(min: Int): Option[TextSpan] =
     leaves.find(_.min == min)
 
-  def findLeaves(modelSpan: LinkSpan): List[TextSpan] = {
+  def findLeaves(modelSpan: LinkSpan): IndexedSeq[TextSpan] = {
     if (modelSpan.hash != hash)
-      return Nil
+      return ArrSeq.emptySeq
 
     findLeaves(TextSpan(this, modelSpan))
   }
 
-  def findLeaves(textSpan: StringSpan): List[TextSpan] = {
+  def findLeaves(textSpan: StringSpan): IndexedSeq[TextSpan] = {
     if (textSpan.data ne data)
-      return Nil
+      return ArrSeq.emptySeq
 
     return leaves.filter(_.overlaps(textSpan))
   }
@@ -108,17 +108,18 @@ case class TextFile(
   }
 
   def toLiteJValue: JValue = {
-    val jtags = tags.map(_.toJValue)
+    val jtags = tags.map(_.toJValue).toList
     JArray(List(JString(hash), JArray(jtags)))
   }
 }
 
 object TextFile extends FromJson[TextFile] {
-  val none = new Array[TextFile](0)
+  val emptySeq   = ArrSeq.empty[TextSpan]
+  val emptyArray = new Array   [TextSpan](0)
 
   override def fromJValue(jv: JValue): Option[TextFile] = jv match {
     case JArray(List(JString(hash), JArray(jtags))) =>
-      val tags = jtags.flatMap(Tag.fromJValue)
+      val tags = ArrSeq.convert(jtags.flatMap(Tag.fromJValue))
       Some(new TextFile(hash, tags))
 
     case
@@ -132,9 +133,9 @@ object TextFile extends FromJson[TextFile] {
         )
       ) =>
 
-      val tags  =  jtags.flatMap(     Tag.fromJValue)
-      val spans = jspans.flatMap(TextSpan.fromLiteJValue(data, hash))
-      val notes = jnotes.flatMap(TextNote.fromJValue)
+      val tags  = ArrSeq.convert( jtags.flatMap(     Tag.fromJValue))
+      val spans = ArrSeq.convert(jspans.flatMap(TextSpan.fromLiteJValue(data, hash)))
+      val notes = ArrSeq.convert(jnotes.flatMap(TextNote.fromJValue))
 
       Some(new TextFile(data, hash, tags, spans, notes))
 

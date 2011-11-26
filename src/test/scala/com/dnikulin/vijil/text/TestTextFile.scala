@@ -28,6 +28,8 @@ import org.junit.Assert._
 
 import org.xerial.snappy.Snappy
 
+import com.dnikulin.vijil.tools.ArrSeq
+
 class TestTextFile {
   implicit val formats = DefaultFormats
 
@@ -41,12 +43,12 @@ class TestTextFile {
     val tag2  = Tag("foo2", "bar2")
     val tag3  = Tag("title", name)
 
-    val span1 = new TextSpan(data, hash, 3, 4, List(tag2, tag1))
-    val span2 = new TextSpan(data, hash, 1, 6, List(tag1), List(span1))
+    val span1 = new TextSpan(data, hash, 3, 4, ArrSeq(tag2, tag1))
+    val span2 = new TextSpan(data, hash, 1, 6, ArrSeq(tag1), ArrSeq(span1))
 
     val note1 = new TextNote(7, "lab3l", "b0dy")
 
-    val text1 = new TextFile(data, hash, List(tag2, tag3, tag1), List(span1, span2), List(note1))
+    val text1 = new TextFile(data, hash, ArrSeq(tag2, tag3, tag1), ArrSeq(span1, span2), ArrSeq(note1))
 
     // Must correctly extract name from tags.
     assertEquals(name, text1.name)

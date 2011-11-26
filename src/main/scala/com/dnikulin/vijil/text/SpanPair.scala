@@ -37,7 +37,7 @@ case class SpanPair(
   override val identity =
     Hash.hash("%s_!_%s".format(sample.identity, source.identity))
 
-  override val spans = List(sample, source)
+  override val spans = ArrSeq(sample, source)
 
   def texts = spans.flatMap(_.findText)
 
@@ -47,12 +47,15 @@ case class SpanPair(
 }
 
 object SpanPair extends FromJson[SpanPair] {
-  def apply(texts: List[TextFile], exact: List[LinkSpanSet], expand: List[LinkSpanSet]): List[SpanPair] = {
-    assert((exact ::: expand).forall(_.domain == SpanDomain.CHARACTERS))
+  val emptySeq   = ArrSeq.empty[SpanPair]
+  val emptyArray = new Array   [SpanPair](0)
+
+  def apply(texts: Seq[TextFile], exact: Seq[LinkSpanSet], expand: Seq[LinkSpanSet]): IndexedSeq[SpanPair] = {
+    assert((exact ++ expand).forall(_.domain == SpanDomain.CHARACTERS))
 
     val allExact = {
       for (mset  <- exact;
-           mspan <- mset.spans.toList;
+           mspan <- mset.spans;
            span  <- TextSpan(texts, mspan))
         yield span
     }
@@ -62,12 +65,12 @@ object SpanPair extends FromJson[SpanPair] {
     for (set <- expand; mspan <- set.spans; tspan <- TextSpan(texts, mspan)) {
       import tspan._
       val exact  = allExact.filter(overlaps)
-      val span2  = new TextSpan(data, hash, min, max, tags, exact.toList)
+      val span2  = new TextSpan(data, hash, min, max, tags, ArrSeq.convert(exact))
       linked(mspan.code) = span2
     }
 
     // Create pairs for all linked spans.
-    val pairs = List.newBuilder[SpanPair]
+    val pairs = ArrSeq.newBuilder[SpanPair]
     for (set    <- expand;
          mspan1 <- set.spans;    tspan1 <- linked.get(mspan1.code);
          mspan2 <- mspan1.links; tspan2 <- linked.get(mspan2.code)) {

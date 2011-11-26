@@ -20,10 +20,18 @@
 
 package com.dnikulin.vijil.parse
 
+import scala.collection.mutable.ArraySeq
+
 import java.lang.Math
 
+import com.dnikulin.vijil.tools.ArrSeq
 import com.dnikulin.vijil.traits.HasData
 import com.dnikulin.vijil.traits.Span
+
+object StringSpan {
+  val emptySeq   = ArrSeq.empty[StringSpan]
+  val emptyArray = new Array   [StringSpan](0)
+}
 
 trait StringSpan extends Span[StringSpan] with HasData[String] {
   require(max <= data.length)

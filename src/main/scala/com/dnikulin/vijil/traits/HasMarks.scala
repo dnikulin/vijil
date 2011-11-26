@@ -23,5 +23,5 @@ package com.dnikulin.vijil.traits
 import com.dnikulin.vijil.render.NodeSpan
 
 trait HasMarks {
-  val marks: List[NodeSpan]
+  val marks: IndexedSeq[NodeSpan]
 }

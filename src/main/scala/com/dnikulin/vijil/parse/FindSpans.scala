@@ -20,6 +20,8 @@
 
 package com.dnikulin.vijil.parse
 
+import scala.collection.mutable.ArraySeq
+
 import java.text.BreakIterator
 import java.util.regex.Pattern
 
@@ -30,26 +32,26 @@ object FindSpans {
   val wordBoundPattern = Pattern.compile("(\\b|\\s+)")
   val sentencePattern  = Pattern.compile("[\\.!?]['\"]?(\\s+)[A-Z\\-'\"]")
 
-  def words(root: StringSpan): List[StringSpan] =
+  def words(root: StringSpan): IndexedSeq[StringSpan] =
     each(root, wordPattern)
 
-  def sentences(root: StringSpan): List[StringSpan] =
+  def sentences(root: StringSpan): IndexedSeq[StringSpan] =
     rejoinSentences(sentencesSimple(root))
 
-  def sentencesSimple(root: StringSpan): List[StringSpan] =
+  def sentencesSimple(root: StringSpan): IndexedSeq[StringSpan] =
     split(root, sentencePattern)
 
-  def wordsNumbers(root: StringSpan): List[StringSpan] =
+  def wordsNumbers(root: StringSpan): IndexedSeq[StringSpan] =
     each(root, wordNumPattern)
 
-  def paragraphs(root: StringSpan): List[StringSpan] =
+  def paragraphs(root: StringSpan): IndexedSeq[StringSpan] =
     split(root, paragraphPattern)
 
-  def wordBounds(root: StringSpan): List[StringSpan] =
+  def wordBounds(root: StringSpan): IndexedSeq[StringSpan] =
     split(root, wordBoundPattern)
 
-  def split(root: StringSpan, bounds: BreakIterator): List[StringSpan] = {
-    val spans = List.newBuilder[StringSpan]
+  def split(root: StringSpan, bounds: BreakIterator): IndexedSeq[StringSpan] = {
+    val spans = ArraySeq.newBuilder[StringSpan]
 
     // Assign string data for iterator.
     bounds.setText(root.substring)
@@ -81,8 +83,8 @@ object FindSpans {
     return spans.result
   }
 
-  def each(root: StringSpan, pattern: Pattern): List[StringSpan] = {
-    val spans = List.newBuilder[StringSpan]
+  def each(root: StringSpan, pattern: Pattern): IndexedSeq[StringSpan] = {
+    val spans = ArraySeq.newBuilder[StringSpan]
 
     // Create matcher to iterate over splits.
     val matcher = pattern.matcher(root.substring)
@@ -99,8 +101,8 @@ object FindSpans {
     return spans.result
   }
 
-  def split(root: StringSpan, pattern: Pattern): List[StringSpan] = {
-    val spans = List.newBuilder[StringSpan]
+  def split(root: StringSpan, pattern: Pattern): IndexedSeq[StringSpan] = {
+    val spans = ArraySeq.newBuilder[StringSpan]
 
     // Create matcher to iterate over splits.
     val matcher = pattern.matcher(root.substring)
@@ -138,10 +140,11 @@ object FindSpans {
     return spans.result
   }
 
-  def rejoinSentences(sents: List[StringSpan]): List[StringSpan] = {
-    sents.foldLeft(List.empty[StringSpan]){(spans, thisSpan) =>
+  def rejoinSentences(sents: IndexedSeq[StringSpan]): IndexedSeq[StringSpan] = {
+    // Process the spans as a list, building a list in reverse.
+    val out = sents.foldLeft(List.empty[StringSpan]){(spans, thisSpan) =>
       if (spans.isEmpty == false) {
-        val lastSpan = spans.last
+        val lastSpan = spans.head
         assert(thisSpan.min >= lastSpan.max)
 
         // Extract the string hole between the two spans.
@@ -150,23 +153,28 @@ object FindSpans {
         // Find if there were any newlines between the two spans.
         if (hole.contains('\n')) {
           // Keep this span as-is.
-          spans ::: thisSpan :: Nil
+          thisSpan :: spans
         } else {
           val lastWord = lastSpan.substring.reverse.
                          dropWhile(_.isLetter == false).
                          takeWhile(_.isWhitespace == false)
 
           if ((lastWord.length > 0) && (lastWord.last.isUpper == true)) {
-            spans.dropRight(1) ::: join(lastSpan, thisSpan) :: Nil
+            // Join the span with the previous span.
+            join(lastSpan, thisSpan) :: spans.drop(1)
           } else {
             // Keep this span as-is.
-            spans ::: thisSpan :: Nil
+            thisSpan :: spans
           }
         }
       } else {
-        spans ::: thisSpan :: Nil
+        // Keep this span as-is.
+        thisSpan :: spans
       }
     }
+
+    // Reverse the list and construct an ArraySeq.
+    (StringSpan.emptySeq ++ out.reverse)
   }
 
   def join(s1: StringSpan, s2: StringSpan): StringSpan = {

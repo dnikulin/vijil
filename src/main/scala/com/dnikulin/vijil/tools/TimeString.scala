@@ -41,17 +41,17 @@ object TimeString {
     return (date, time)
   }
 
-  def makeTags(moment: Date): List[Tag] = {
+  def makeTags(moment: Date): IndexedSeq[Tag] = {
     val (date, time) = makeDateTime(moment)
-    List(Tag("Date", date), Tag("Time", time))
+    ArrSeq(Tag("Date", date), Tag("Time", time))
   }
 
   def makeDateTime(): (String, String) =
     return makeDateTime(new Date)
 
-  def makeTags(): List[Tag] =
+  def makeTags(): IndexedSeq[Tag] =
     makeTags(new Date)
 
   def format(tags: HasTags[_]): String =
-    (tags.tag("Date").take(1) ::: tags.tag("Time").take(1)).mkString(" ").trim
+    (tags.tag("Date").take(1) ++ tags.tag("Time").take(1)).mkString(" ").trim
 }

@@ -4,7 +4,7 @@
   <groupId>com.dnikulin</groupId>
   <artifactId>vijil</artifactId>
   <packaging>jar</packaging>
-  <version>0.6</version>
+  <version>0.6.1</version>
   <name>vijil</name>
 
   <properties>

@@ -143,7 +143,7 @@ object PackGuten {
     val authorTags   =   authors.toArray.map(Tag("Author",   _))
     val languageTags = languages.toArray.map(Tag("Language", _))
 
-    val tags = List(
+    val tags = IndexedSeq(
       Tag("Collection", "Project Gutenberg"),
       Tag("Title",      title),
       Tag("Bytes",      bytes.length.toString),

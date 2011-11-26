@@ -30,7 +30,7 @@ import com.dnikulin.vijil.text._
 import com.dnikulin.vijil.tools._
 import com.dnikulin.vijil.traits._
 
-case class SourceText(text: TextFile, spans: List[StubSpan])
+case class SourceText(text: TextFile, spans: Seq[StubSpan])
   extends KeyedByHash[SourceText] with ToJson {
 
   override val hash = text.hash
@@ -39,7 +39,7 @@ case class SourceText(text: TextFile, spans: List[StubSpan])
   val llen = spans.foldLeft(0)(_ + _.llen)
 
   override def toJValue: JValue = {
-    val jspans = spans.sortWith(_.cmin < _.cmin).map(_.toJValue)
+    val jspans = spans.sortWith(_.cmin < _.cmin).map(_.toJValue).toList
     JArray(List(text.toLiteJValue, JArray(jspans)))
   }
 }
@@ -56,13 +56,13 @@ object SourceText extends FromJson[SourceText] {
       None
   }
 
-  def makeSourceTexts(text: TextModel, spans: List[SpanText]): List[SourceText] = {
+  def makeSourceTexts(text: TextModel, spans: Seq[SpanText]): Seq[SourceText] = {
     val utexts = new HashMap[String, Option[TextFile]]
 
     for (span <- spans)
       utexts.getOrElseUpdate(span.text2, TextFile.fromJson(span.meta2))
 
-    for (utext <- utexts.values.toList; meta <- utext) yield {
+    for (utext <- utexts.values.toSeq; meta <- utext.toSeq) yield {
       val stubs = {
         for (span <- spans; if (span.text2 == meta.hash))
           yield StubSpan(text, span)

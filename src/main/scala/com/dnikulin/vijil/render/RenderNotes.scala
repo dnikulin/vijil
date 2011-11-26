@@ -23,10 +23,11 @@ package com.dnikulin.vijil.render
 import scala.xml._
 
 import com.dnikulin.vijil.text._
+import com.dnikulin.vijil.tools.ArrSeq
 
 object RenderNotes {
-  def apply(root: TextSpan, notes: List[TextNote]): List[NodeSpan] = {
-    for (note <- notes; if root.includes(note.at)) yield {
+  def apply(root: TextSpan, notes: Seq[TextNote]): IndexedSeq[NodeSpan] = {
+    for (note <- ArrSeq.convert(notes); if root.includes(note.at)) yield {
       // Empty spans are not rendered, so try to make a 1-letter span.
       val cmin = note.at
       val cmax = (cmin + 1) min (root.max - 1)

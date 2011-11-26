@@ -44,5 +44,5 @@ trait Span[T <: Span[T]] {
 }
 
 trait HasSpans[T <: Span[_]] {
-  val spans: List[T]
+  val spans: IndexedSeq[T]
 }

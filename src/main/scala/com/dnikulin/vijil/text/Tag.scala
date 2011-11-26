@@ -20,8 +20,11 @@
 
 package com.dnikulin.vijil.text
 
+import scala.collection.mutable.ArraySeq
+
 import net.liftweb.json._
 
+import com.dnikulin.vijil.tools.ArrSeq
 import com.dnikulin.vijil.traits.FromJson
 import com.dnikulin.vijil.traits.ToJson
 
@@ -31,6 +34,9 @@ case class Tag(name: String, value: String) extends ToJson {
 }
 
 object Tag extends FromJson[Tag] {
+  val emptySeq   = ArrSeq.empty[Tag]
+  val emptyArray = new Array   [Tag](0)
+
   override def fromJValue(jv: JValue): Option[Tag] = jv match {
     case JArray(List(JString(name), JString(value))) =>
       Some(Tag(name, value))
@@ -43,9 +49,9 @@ object Tag extends FromJson[Tag] {
 trait HasTags[T <: HasTags[T]] {
   self: T =>
 
-  val tags: List[Tag]
+  val tags: IndexedSeq[Tag]
 
-  def tag(name: String): List[String] =
+  def tag(name: String): Seq[String] =
     tags.filter(_.name.equalsIgnoreCase(name)).map(_.value)
 
   def tagOr(name: String, default: String = "?"): String =

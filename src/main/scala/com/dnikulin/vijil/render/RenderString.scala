@@ -24,6 +24,7 @@ import scala.xml._
 
 import com.dnikulin.vijil.parse.StringSpan
 import com.dnikulin.vijil.parse.PlainStringSpan
+import com.dnikulin.vijil.tools.ArrSeq
 
 object RenderString {
   def apply(data: String, spans: Seq[NodeSpan]): NodeSeq =
@@ -63,7 +64,7 @@ object RenderString {
     if (queue.length < 1)
       return renderTree(root, tail)
 
-    val nodes  = new NodeBuffer
+    val nodes  = ArrSeq.newBuilder[Node]
 
     var pos    = min
     var ispan  = 0
@@ -119,6 +120,6 @@ object RenderString {
       nodes ++= renderTree(span2, tail)
     }
 
-    return nodes
+    return nodes.result
   }
 }

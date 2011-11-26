@@ -29,6 +29,7 @@ import net.liftweb.util.Helpers.asInt
 import com.dnikulin.vijil.render.NodeSpan
 import com.dnikulin.vijil.text._
 import com.dnikulin.vijil.traits.Rune
+import com.dnikulin.vijil.tools.ArrSeq
 import com.dnikulin.vijil.tools.CleanString
 
 object ReadTEI {
@@ -43,10 +44,10 @@ object ReadTEI {
            text      <- (tei \ "text").headOption) yield {
 
         // Discover authors, if any.
-        val authors = (titleStmt \\ "author").map(cleanText).toList
+        val authors = ArrSeq.convert((titleStmt \\ "author").map(cleanText))
 
         // Create tag list from title and authors.
-        val tags = Tag("Title", cleanText(title)) :: authors.map(Tag("Author", _))
+        val tags = ArrSeq(Tag("Title", cleanText(title))) ++ authors.map(Tag("Author", _))
 
         // Read text content.
         readTextContent(text, tags, hash)
@@ -56,7 +57,7 @@ object ReadTEI {
       None
   }
 
-  def readTextContent(text: Node, tags: List[Tag], hash: String): TextFile = {
+  def readTextContent(text: Node, tags: IndexedSeq[Tag], hash: String): TextFile = {
     // Refer to front, body and back elements.
     val frontBodyBack = ((text \ "front") ++ (text \ "body") ++ (text \ "back"))
 
@@ -67,13 +68,13 @@ object ReadTEI {
     var cursor = 0
 
     // Buffer for marks.
-    val marks = List.newBuilder[NodeSpan]
+    val marks = ArrSeq.newBuilder[NodeSpan]
 
     // Buffer for runes.
-    val runes = List.newBuilder[Rune]
+    val runes = ArrSeq.newBuilder[Rune]
 
     // Prepare extraction inner function.
-    def extract(node: Node): List[TextSpan] = node match {
+    def extract(node: Node): IndexedSeq[TextSpan] = node match {
       case Text(string) =>
         // Extract and clean string data.
         val clean = cleanPadString(string)
@@ -87,12 +88,12 @@ object ReadTEI {
         assert(data.substring(cmin, cmax) == clean)
 
         // Return no span for plain text.
-        Nil
+        ArrSeq.emptySeq
 
       case Elem(_, _, _, _, child@_*) =>
         // Explore child elements.
         val cmin  = cursor
-        val parts = child.flatMap(extract).toList
+        val parts = ArrSeq.convert(ArrSeq.convert(child).flatMap(extract))
         val cmax  = cursor
 
         // Create tags, keep only non-empty tags.
@@ -109,30 +110,30 @@ object ReadTEI {
 
         if (nodeMakeSpan(node)) {
           // Return new wrapping span.
-          List(span)
+          ArrSeq(span)
         } else {
           // Return child spans.
           parts
         }
 
       case _ =>
-        Nil
+        ArrSeq.emptySeq
     }
 
     // Invoke extraction function on all text contents.
-    val parts = frontBodyBack.toList.flatMap(extract)
+    val parts = ArrSeq.convert(ArrSeq.convert(frontBodyBack).flatMap(extract))
 
     // Check that all text content has been consumed.
     assert(cursor == data.length)
 
     // Create extra tag to represent title for root span.
-    val tags2 = tags.filter(_.name == "Title").map(_.copy(name = "BlockName"))
+    val tags2 = ArrSeq.convert(tags.filter(_.name == "Title").map(_.copy(name = "BlockName")))
 
     // Create root span to contain all text spans.
-    val span = new TextSpan(data, hash, 0, cursor, tags2 ::: tags, parts)
+    val span = new TextSpan(data, hash, 0, cursor, tags2 ++ tags, parts)
 
     // Create TextFile.
-    new TextFile(data, hash, tags, List(span), Nil, marks.result, runes.result)
+    new TextFile(data, hash, tags, ArrSeq(span), ArrSeq.emptySeq, marks.result, runes.result)
   }
 
   def cleanText(nodes: NodeSeq): String =
@@ -151,7 +152,7 @@ object ReadTEI {
     nodes.flatMap(findText)
 
   def findText(node: Node): Seq[String] = node match {
-    case Text(string) => List(cleanPadString(string))
+    case Text(string) => IndexedSeq(cleanPadString(string))
     case _            => findText(node.child)
   }
 
@@ -162,47 +163,47 @@ object ReadTEI {
   def scoreToSpace(string: String): String =
     underscorePattern.matcher(string).replaceAll(" ")
 
-  def nodeTags(node: Node): List[Tag] = node match {
+  def nodeTags(node: Node): IndexedSeq[Tag] = node match {
     case Elem(null, "div", _, _, _*) =>
       val divType = findName(node, "type")
       val divID   = findName(node, "id")
-      List(Tag("BlockLevel", divType), Tag("BlockName", divID))
+      ArrSeq(Tag("BlockLevel", divType), Tag("BlockName", divID))
 
     case _ =>
-      Nil
+      ArrSeq.emptySeq
   }
 
-  def nodeSpans(node: Node): List[NodeSpan.Wrap] = node match {
+  def nodeSpans(node: Node): IndexedSeq[NodeSpan.Wrap] = node match {
     case Elem(null, "head", _, _, _*) =>
-      List(TeiSpan.head)
+      ArrSeq(TeiSpan.head)
 
     case Elem(null, "p", _, _, _*) =>
-      List(TeiSpan.paragraph)
+      ArrSeq(TeiSpan.paragraph)
 
     case Elem(null, "q", _, _, _*) =>
-      List(TeiSpan.quote)
+      ArrSeq(TeiSpan.quote)
 
     case Elem(null, "hi", _, _, _*) =>
-      List(TeiSpan.quote)
+      ArrSeq(TeiSpan.quote)
 
     case Elem(null, "list", _, _, _*) =>
-      List(TeiSpan.list)
+      ArrSeq(TeiSpan.list)
 
     case Elem(null, "item", _, _, _*) =>
-      List(TeiSpan.listItem)
+      ArrSeq(TeiSpan.listItem)
 
     case Elem(null, "note", _, _, _*) =>
-      List(TeiSpan.note)
+      ArrSeq(TeiSpan.note)
 
     case Elem(null, "pb", _, _, _*) =>
       for (number <- numbers(node))
         yield TeiSpan.page(number)(_)
 
     case _ =>
-      Nil
+      ArrSeq.emptySeq
   }
 
-  def nodeRunes(node: Node, cursor: Int): List[Rune] = node match {
+  def nodeRunes(node: Node, cursor: Int): IndexedSeq[Rune] = node match {
     // Interpret <pb n="1" /> element.
     case Elem(null, "pb", _, _, _*) =>
       // Convert to PageBreak rune.
@@ -210,7 +211,7 @@ object ReadTEI {
         yield PageBreak(number, cursor)
 
     case _ =>
-      Nil
+     ArrSeq.emptySeq
   }
 
   def nodeMakeSpan(node: Node): Boolean = node match {
@@ -224,8 +225,8 @@ object ReadTEI {
     case _                             => false
   }
 
-  def numbers(node: Node): List[Int] =
-    asInt((node \ "@n").text.trim).toList
+  def numbers(node: Node): IndexedSeq[Int] =
+    ArrSeq.convert(asInt((node \ "@n").text.trim).toSeq)
 }
 
 object TeiSpan {

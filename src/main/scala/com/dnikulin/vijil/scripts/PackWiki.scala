@@ -64,7 +64,7 @@ object PackWiki {
 
         val url = (baseURL + title.trim)
 
-        val tags = List(
+        val tags = IndexedSeq(
           Tag("Collection", "English Wikipedia"),
           Tag("Title",      title.trim),
           Tag("URL",        url),

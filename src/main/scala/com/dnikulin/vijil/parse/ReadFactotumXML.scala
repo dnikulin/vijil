@@ -20,16 +20,18 @@
 
 package com.dnikulin.vijil.parse
 
+import scala.collection.mutable.ArraySeq
 import scala.xml._
 
 import com.dnikulin.vijil.file.Hash
 import com.dnikulin.vijil.text._
+import com.dnikulin.vijil.tools.ArrSeq
 
 object ReadFactotumXML {
   def apply(root: Node): Option[TextFile] = {
     val data   = readString(root)
     var cursor = 0
-    val notesb = List.newBuilder[TextNote]
+    val notesb = ArraySeq.newBuilder[TextNote]
 
     // Prepare text hash for spans.
     val hash   = Hash.hash(data)
@@ -55,7 +57,7 @@ object ReadFactotumXML {
           val id     = (level + " " + name).trim
           val path2  = (path + ", " + id)
 
-          val tags = List(
+          val tags = ArrSeq(
             Tag("BlockLevel", level),
             Tag("BlockName",  name),
             Tag("BlockPath",  path2)
@@ -70,13 +72,13 @@ object ReadFactotumXML {
               Some(span)
 
             case Nil =>
-              val span = new TextSpan(data, hash, tcmin, tcmax, tags, Nil)
+              val span = new TextSpan(data, hash, tcmin, tcmax, tags, ArrSeq.emptySeq)
               Some(paragraphs(span, path2))
 
             case _ =>
               val cmin = spans.map(_.min).min
               val cmax = spans.map(_.max).max
-              val span = new TextSpan(data, hash, cmin, cmax, tags, spans)
+              val span = new TextSpan(data, hash, cmin, cmax, tags, ArrSeq.convert(spans))
               Some(span)
           }
 
@@ -100,11 +102,11 @@ object ReadFactotumXML {
     }
 
     val title = (root \ "@id").text.trim
-    val tags2 = List(Tag("Title", title))
-    val tags3 = List(Tag("BlockName", title), Tag("BlockPath", title))
+    val tags2 = ArrSeq(Tag("Title", title))
+    val tags3 = ArrSeq(Tag("BlockName", title), Tag("BlockPath", title))
 
-    val spans = root.child.toList.flatMap(consume(title, _))
-    val tspan = List(TextSpan(data, hash, 0, data.length, tags3, spans))
+    val spans = ArrSeq.convert(root.child).flatMap(consume(title, _))
+    val tspan = ArrSeq(TextSpan(data, hash, 0, data.length, tags3, spans))
 
     val notes = notesb.result
 
@@ -150,13 +152,13 @@ object ReadFactotumXML {
         val id    = (level + " " + name).trim
         val path2 = (path + ", " + id)
 
-        val tags = List(
+        val tags = ArrSeq(
           Tag("BlockLevel", level),
           Tag("BlockName",  name),
           Tag("BlockPath",  path2)
         ).filter(_.value.trim.length > 0)
 
-        new TextSpan(root.data, root.hash, para.min, para.max, tags, Nil)
+        new TextSpan(root.data, root.hash, para.min, para.max, tags, ArrSeq.emptySeq)
       }
 
       TextSpan(root.data, root.hash, cmin, cmax, root.tags, spans)

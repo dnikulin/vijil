@@ -22,10 +22,12 @@ package com.dnikulin.vijil.render
 
 import scala.xml._
 
+import com.dnikulin.vijil.tools.ArrSeq
+
 object NodeWalk {
-  def find(tree: Node, where: (Node => Boolean)): List[Node] = {
-    // Prepare output list builder.
-    val found = List.newBuilder[Node]
+  def find(tree: Node, where: (Node => Boolean)): IndexedSeq[Node] = {
+    // Prepare output sequence builder.
+    val found = ArrSeq.newBuilder[Node]
 
     def walk(node: Node) {
       // Check this node.

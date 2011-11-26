@@ -28,6 +28,8 @@ import org.junit.Assert._
 
 import org.xerial.snappy.Snappy
 
+import com.dnikulin.vijil.tools.ArrSeq
+
 class TestTextSpan {
   val hash = "hash"
   val data = "Vigil is distributed in the hope that it will be useful"
@@ -59,8 +61,8 @@ class TestTextSpan {
     val tag1  = Tag("foo1", "bar1")
     val tag2  = Tag("foo2", "bar2")
 
-    val span1 = new TextSpan(data, hash, 3, 4, List(tag2, tag1))
-    val span2 = new TextSpan(data, hash, 1, 6, List(tag1), List(span1))
+    val span1 = new TextSpan(data, hash, 3, 4, ArrSeq(tag2, tag1))
+    val span2 = new TextSpan(data, hash, 1, 6, ArrSeq(tag1), ArrSeq(span1))
 
     val json1 = span2.toJson
 

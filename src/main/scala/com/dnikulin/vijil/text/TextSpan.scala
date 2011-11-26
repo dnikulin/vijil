@@ -20,6 +20,8 @@
 
 package com.dnikulin.vijil.text
 
+import scala.collection.mutable.ArraySeq
+
 import java.lang.Math
 
 import net.liftweb.json._
@@ -35,8 +37,8 @@ case class TextSpan(
   override val hash:  String,
   override val min:   Int,
   override val max:   Int,
-  override val tags:  List[Tag]      = Nil,
-  override val spans: List[TextSpan] = Nil
+  override val tags:  IndexedSeq[Tag]      = ArrSeq.emptySeq,
+  override val spans: IndexedSeq[TextSpan] = ArrSeq.emptySeq
 ) extends StringSpan with HasHash with HasSpans[TextSpan] with HasTags[TextSpan] with HasIdentity with ToJson {
 
   require(min >= 0)
@@ -52,7 +54,7 @@ case class TextSpan(
   override val identity = "tfs_%s_%9d_%9d".format(hash, min, max)
 
   override def addTag(tag: Tag): TextSpan =
-    new TextSpan(data, hash, min, max, tag :: tags, spans)
+    new TextSpan(data, hash, min, max, ArrSeq(tag) ++ tags, spans)
 
   override def cut(min1: Int, max1: Int): TextSpan = {
     // Check sanity of new span.
@@ -71,8 +73,8 @@ case class TextSpan(
     new TextSpan(data, hash, min1b, max1b, tags, spans)
   }
 
-  def leafSpans(): List[TextSpan] = {
-    if  (spans.isEmpty) List(this)
+  def leafSpans(): IndexedSeq[TextSpan] = {
+    if  (spans.isEmpty) ArrSeq(this)
     else spans.flatMap(_.leafSpans)
   }
 
@@ -109,6 +111,15 @@ case class TextSpan(
 }
 
 object TextSpan extends FromJson[TextSpan] {
+  val emptySeq   = ArrSeq.empty[TextSpan]
+  val emptyArray = new Array   [TextSpan](0)
+
+  def single(span: TextSpan): IndexedSeq[TextSpan] = {
+    val out = new ArraySeq[TextSpan](1)
+    out(0) = span
+    out
+  }
+
   def apply(data: String, hash: String): TextSpan =
     new TextSpan(data, hash, 0, data.length)
 
@@ -136,8 +147,8 @@ object TextSpan extends FromJson[TextSpan] {
   override def fromJValue(jv: JValue): Option[TextSpan] = jv match {
     case JArray(List(JString(hash), JInt(min), JInt(max), JArray(jtags), JArray(jspans))) =>
       for (text <- TextMapInjector(hash)) yield {
-        val tags  =  jtags.flatMap(Tag.fromJValue)
-        val spans = jspans.flatMap(TextSpan.fromJValue)
+        val tags  = ArrSeq.convert( jtags.flatMap(Tag.fromJValue))
+        val spans = ArrSeq.convert(jspans.flatMap(TextSpan.fromJValue))
         new TextSpan(text.data, text.hash, min.toInt, max.toInt, tags, spans)
       }
 
@@ -147,12 +158,12 @@ object TextSpan extends FromJson[TextSpan] {
 
   def fromLiteJValue(data: String, hash: String)(jv: JValue): Option[TextSpan] = jv match {
     case JArray(List(JInt(min), JInt(max), JArray(jtags), JArray(jspans))) =>
-      val tags  =  jtags.flatMap(Tag.fromJValue)
-      val spans = jspans.flatMap(fromLiteJValue(data, hash))
+      val tags  = ArrSeq.convert( jtags.flatMap(Tag.fromJValue))
+      val spans = ArrSeq.convert(jspans.flatMap(fromLiteJValue(data, hash)))
       Some(new TextSpan(data, hash, min.toInt, max.toInt, tags, spans))
 
     case JArray(List(JInt(min), JInt(max))) =>
-      Some(new TextSpan(data, hash, min.toInt, max.toInt, Nil, Nil))
+      Some(new TextSpan(data, hash, min.toInt, max.toInt, ArrSeq.emptySeq, ArrSeq.emptySeq))
 
     case _ =>
       None

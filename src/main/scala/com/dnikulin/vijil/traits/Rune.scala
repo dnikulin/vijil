@@ -42,12 +42,12 @@ trait HasRunes {
   /**
    * Return all runes associated with this instance.
    */
-  val runes: Seq[Rune]
+  val runes: IndexedSeq[Rune]
 
   /**
    * Returns all runes that are instances of the given class.
    */
-  def runesOfClass[T <: Rune](implicit ev: ClassManifest[T]): Seq[T] = runes.flatMap {
+  def runesOfClass[T <: Rune](implicit ev: ClassManifest[T]): IndexedSeq[T] = runes.flatMap {
     // Use reflection API for type safe filter.
     case rune if ev.erasure.isAssignableFrom(rune.getClass) =>
       Some(rune.asInstanceOf[T])

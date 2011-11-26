@@ -23,6 +23,7 @@ package com.dnikulin.vijil.parse
 import com.dnikulin.vijil.file.Hash
 import com.dnikulin.vijil.parse._
 import com.dnikulin.vijil.text._
+import com.dnikulin.vijil.tools.ArrSeq
 import com.dnikulin.vijil.tools.CleanString._
 
 object StringToText {
@@ -39,7 +40,7 @@ object StringToText {
     val clean  = split.map(cleanString)
 
     // Re-split large paragraphs into 4 sentences each.
-    val rclean = clean.flatMap(resplit(_, 4)).toList
+    val rclean = ArrSeq.convert(clean.flatMap(resplit(_, 4)))
 
     // Combine paragraphs into new data string.
     val data   = rclean.mkString("\n")
@@ -62,24 +63,24 @@ object StringToText {
       assert(data.substring(cmin, cmax) == para)
 
       // Create tags for span.
-      val tags = List(paragraphLevel, Tag("BlockName", count.toString))
+      val tags = ArrSeq(paragraphLevel, Tag("BlockName", count.toString))
 
       // Create paragraph span.
-      TextSpan(data, hash, cmin, cmax, tags, Nil)
+      TextSpan(data, hash, cmin, cmax, tags, ArrSeq.emptySeq)
     }
 
     // Create root span.
-    val rootTags = List(Tag("BlockName", name))
+    val rootTags = ArrSeq(Tag("BlockName", name))
     val rootSpan = TextSpan(data, hash, 0, data.length, rootTags, paras)
 
     // Create text file.
-    val textTags = List(Tag("Title", name))
-    TextFile(data, hash, textTags, List(rootSpan))
+    val textTags = ArrSeq(Tag("Title", name))
+    TextFile(data, hash, textTags, ArrSeq(rootSpan))
   }
 
   def resplit(para: String, each: Int): IndexedSeq[String] = {
     var sents = FindSpans.sentences(new PlainStringSpan(para)).map(_.substring)
-    val out   = Array.newBuilder[String]
+    val out   = ArrSeq.newBuilder[String]
     while (sents.isEmpty == false) {
       out  += sents.take(each).mkString(" ")
       sents = sents.drop(each)

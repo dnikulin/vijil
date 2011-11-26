@@ -31,7 +31,7 @@ import com.dnikulin.vijil.model.TextModel
 import com.dnikulin.vijil.tools.SoloActor
 
 class SavePackActor(val root: File, val full: Boolean) extends SoloActor {
-  private def save(texts: List[TextModel]): Unit = {
+  private def save(texts: Seq[TextModel]): Unit = {
     val bytes = TextPack.write(texts.toArray, full)
     val hash = Hash.hash(bytes)
     val path = root.getAbsolutePath + File.separator + hash

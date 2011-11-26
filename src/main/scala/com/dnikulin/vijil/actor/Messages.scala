@@ -31,8 +31,8 @@ class TextPlan extends VigilMessage
 // Sentinel text plan.
 case object NoTextPlan extends TextPlan
 
-case class RawTexts    (texts: List[TextFile],  plan: TextPlan=NoTextPlan) extends VigilMessage
-case class ParsedTexts (texts: List[TextModel], plan: TextPlan=NoTextPlan) extends VigilMessage
+case class RawTexts    (texts: Seq[TextFile],  plan: TextPlan=NoTextPlan) extends VigilMessage
+case class ParsedTexts (texts: Seq[TextModel], plan: TextPlan=NoTextPlan) extends VigilMessage
 
 case object DeepFlush extends VigilMessage
 case object Shutdown extends VigilMessage

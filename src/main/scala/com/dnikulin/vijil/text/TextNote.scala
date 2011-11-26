@@ -42,5 +42,5 @@ object TextNote extends FromJson[TextNote] {
 }
 
 trait HasTextNotes {
-  val notes: List[TextNote]
+  val notes: IndexedSeq[TextNote]
 }

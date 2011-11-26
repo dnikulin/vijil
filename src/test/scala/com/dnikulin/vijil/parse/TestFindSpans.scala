@@ -31,7 +31,7 @@ class TestFindSpans {
   import FindSpans.paragraphs
   import FindSpans.wordBounds
 
-  private def test(method: (StringSpan => List[StringSpan]), body: String): Array[String] = {
+  private def test(method: (StringSpan => IndexedSeq[StringSpan]), body: String): IndexedSeq[String] = {
     // Create pad string surrounding the real string.
     // This helps to test that the returned spans are from the original string.
     val pad1  = "test pre pad "
@@ -55,7 +55,7 @@ class TestFindSpans {
 
     // Return the new spans for task-specific assertions.
     // Map them to their substrings for easy equality.
-    return spans.map(_.substring).toArray
+    return spans.map(_.substring)
   }
 
   @Test

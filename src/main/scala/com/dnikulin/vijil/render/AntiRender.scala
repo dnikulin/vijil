@@ -23,16 +23,17 @@ package com.dnikulin.vijil.render
 import scala.xml._
 
 import com.dnikulin.vijil.parse.PlainStringSpan
+import com.dnikulin.vijil.tools.ArrSeq
 
-case class AntiRender(data: String, nodes: List[NodeSpan])
+case class AntiRender(data: String, nodes: IndexedSeq[NodeSpan])
 
 object AntiRender {
   def apply(tree: Node): AntiRender = {
     // Extract all string data without changes.
     val data = tree.text
 
-    // List of extracted nodes.
-    val nodes = List.newBuilder[NodeSpan]
+    // Sequence of extracted nodes.
+    val nodes = ArrSeq.newBuilder[NodeSpan]
 
     // Current position in 'data'.
     var cursor = 0

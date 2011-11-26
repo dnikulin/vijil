@@ -20,22 +20,20 @@
 
 package com.dnikulin.vijil.render
 
-import scala.collection.mutable.ArraySeq
-import scala.collection.mutable.ArrayBuffer
-
 import com.dnikulin.vijil.parse._
+import com.dnikulin.vijil.tools.ArrSeq
 
 object GetOverlaps {
   // Assumes spans is already sorted by .min
   def apply[LT <: StringSpan, ST <: StringSpan](leafList: Seq[LT], spanList: Seq[ST]): IndexedSeq[(LT, IndexedSeq[ST])] = {
     // Empty ArraySeq of this type.
-    val empty  = ArraySeq.empty[ST]
+    val empty  = ArrSeq.empty[ST]
 
-    val leaves = leafList.toIndexedSeq
-    val spans  = spanList.toIndexedSeq
+    val leaves = ArrSeq.convert(leafList)
+    val spans  = ArrSeq.convert(spanList)
 
-    val groups = new ArrayBuffer[(LT, IndexedSeq[ST])]
-    val buffer = new ArrayBuffer[ST]
+    val groups = ArrSeq.newBuilder[(LT, IndexedSeq[ST])]
+    val buffer = ArrSeq.newBuilder[ST]
 
     var li = 0
     var si = 0
@@ -62,7 +60,7 @@ object GetOverlaps {
 
       // Record in output.
       if (found == true) {
-        groups += (leaf -> (empty ++ buffer))
+        groups += (leaf -> (empty ++ buffer.result))
         buffer.clear()
       } else {
         groups += (leaf -> empty)
