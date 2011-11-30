@@ -20,49 +20,48 @@
 
 package com.dnikulin.vijil.tools;
 
-import java.util.Arrays;
+import org.apache.commons.lang.ArrayUtils;
 
 /** Empty arrays of each primitive type, used as free sentinels. */
 public final class Empty {
-    public static final byte   [] bytes   = new byte   [0];
-    public static final short  [] shorts  = new short  [0];
-    public static final int    [] ints    = new int    [0];
-    public static final long   [] longs   = new long   [0];
-    public static final float  [] floats  = new float  [0];
-    public static final double [] doubles = new double [0];
-    public static final Object [] objects = new Object [0];
-    public static final String [] strings = new String [0];
+    // It happens that Apache Commons Lang already has these,
+    // so simply refer back to them with shorter cleaner names.
+    public static final byte   [] bytes   = ArrayUtils.EMPTY_BYTE_ARRAY;
+    public static final short  [] shorts  = ArrayUtils.EMPTY_SHORT_ARRAY;
+    public static final int    [] ints    = ArrayUtils.EMPTY_INT_ARRAY;
+    public static final long   [] longs   = ArrayUtils.EMPTY_LONG_ARRAY;
+    public static final float  [] floats  = ArrayUtils.EMPTY_FLOAT_ARRAY;
+    public static final double [] doubles = ArrayUtils.EMPTY_DOUBLE_ARRAY;
+    public static final Object [] objects = ArrayUtils.EMPTY_OBJECT_ARRAY;
+    public static final String [] strings = ArrayUtils.EMPTY_STRING_ARRAY;
 
+    // Apache Commons Lang does not have an empty string
+    // (which is almost certainly interned by the compiler anyway)
+    // so provide one here.
     public static final String    string  = "";
 
     public static byte[] copy(byte[] in) {
-        if (in.length < 1) return bytes;
-        return Arrays.copyOf(in, in.length);
+        return ArrayUtils.nullToEmpty(in);
     }
 
     public static short[] copy(short[] in) {
-        if (in.length < 1) return shorts;
-        return Arrays.copyOf(in, in.length);
+        return ArrayUtils.nullToEmpty(in);
     }
 
     public static int[] copy(int[] in) {
-        if (in.length < 1) return ints;
-        return Arrays.copyOf(in, in.length);
+        return ArrayUtils.nullToEmpty(in);
     }
 
     public static long[] copy(long[] in) {
-        if (in.length < 1) return longs;
-        return Arrays.copyOf(in, in.length);
+        return ArrayUtils.nullToEmpty(in);
     }
 
     public static float[] copy(float[] in) {
-        if (in.length < 1) return floats;
-        return Arrays.copyOf(in, in.length);
+        return ArrayUtils.nullToEmpty(in);
     }
 
     public static double[] copy(double[] in) {
-        if (in.length < 1) return doubles;
-        return Arrays.copyOf(in, in.length);
+        return ArrayUtils.nullToEmpty(in);
     }
 
     private Empty() {}
