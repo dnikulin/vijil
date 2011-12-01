@@ -35,6 +35,12 @@ object ArrSeq {
   def empty[T]: IndexedSeq[T] =
     emptySeq
 
+  /** Singleton functor that simply returns emptySeq. */
+  object ReturnEmpty extends Function0[IndexedSeq[Nothing]] {
+    override def apply(): IndexedSeq[Nothing] =
+      emptySeq
+  }
+
   /** Convert a collection to an ArraySeq typed as an IndexedSeq[T]. */
   def convert[T](items: TraversableOnce[T]): IndexedSeq[T] = {
     val buffer = ArraySeq.newBuilder[T]
