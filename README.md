@@ -301,25 +301,6 @@ Sophisticated recursive algorithm to render XHTML from separate NodeSpans that i
 Factotum uses RenderString to achieve many rendering effects with very simple and modular code.
 
 
-com.dnikulin.vijil.report (Scala)
-=================================
-
-SourceText.scala
-----------------
-
-A serialisation modeling entity perhaps useful in JSON reports.
-
-
-StubSpan.scala
---------------
-
-A serialisation modeling entity perhaps useful in JSON reports.
-
-TextReport.scala
-----------------
-
-A serialisation modeling entity perhaps useful in JSON reports.
-
 
 com.dnikulin.vijil.result (Java)
 ================================
