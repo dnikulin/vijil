@@ -4,12 +4,12 @@
   <groupId>com.dnikulin</groupId>
   <artifactId>vijil</artifactId>
   <packaging>jar</packaging>
-  <version>0.6.1</version>
+  <version>0.7</version>
   <name>vijil</name>
 
   <properties>
-    <scala.version>2.9.0-1</scala.version>
-    <lift.version>2.4-M3</lift.version>
+    <scala.version>2.9.1</scala.version>
+    <lift.version>2.4-M5</lift.version>
     <lucene.version>3.3.0</lucene.version>
     <!-- Common plugin settings -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
