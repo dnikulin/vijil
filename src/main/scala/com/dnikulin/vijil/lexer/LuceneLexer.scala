@@ -23,16 +23,19 @@ package com.dnikulin.vijil.lexer
 import java.io.StringReader
 
 import org.apache.lucene.analysis.Analyzer
+import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute
+import org.apache.lucene.util.Version
 
 import com.dnikulin.vijil.model.Symbols
 import com.dnikulin.vijil.model.TextModel
 import com.dnikulin.vijil.model.TextModelBuilder
 import com.dnikulin.vijil.text.TextFile
 
-trait LuceneLexer extends SimpleTextLexer {
-  protected def newAnalyzer(): Analyzer
+class LuceneLexer extends SimpleTextLexer {
+  protected def newAnalyzer(): Analyzer =
+    new StandardAnalyzer(Version.LUCENE_33)
 
   protected def termToSymbol(term: String): Int =
     ((term.hashCode & 0x3ffffff0) + Symbols.offset)
