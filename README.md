@@ -139,6 +139,8 @@ A caching wrapper for any TextLexer.
 SimpleTextLexer.scala
 ---------------------
 
+An abstract TextLexer that populates a TextModelBuilder.  Most lexers are built on SimpleTextLexer.
+
 
 HashLexer.scala
 ---------------
