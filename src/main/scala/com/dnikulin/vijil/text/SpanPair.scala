@@ -32,10 +32,9 @@ import com.dnikulin.vijil.traits._
 case class SpanPair(
   val sample: TextSpan,
   val source: TextSpan
-) extends HasIdentity with HasSpans[TextSpan] with ToJson {
+) extends HasSpans[TextSpan] with HasHash with ToJson {
 
-  override val identity =
-    Hash.hash("%s_!_%s".format(sample.identity, source.identity))
+  override val hash = Hash.hash("%s_!_%s".format(sample.identity, source.identity))
 
   override val spans = ArrSeq(sample, source)
 

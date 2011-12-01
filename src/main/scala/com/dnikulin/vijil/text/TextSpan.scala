@@ -39,7 +39,7 @@ case class TextSpan(
   override val max:   Int,
   override val tags:  IndexedSeq[Tag]      = ArrSeq.emptySeq,
   override val spans: IndexedSeq[TextSpan] = ArrSeq.emptySeq
-) extends StringSpan with HasHash with HasSpans[TextSpan] with HasTags[TextSpan] with HasIdentity with ToJson {
+) extends StringSpan with HasHash with HasSpans[TextSpan] with HasTags[TextSpan] with ToJson {
 
   require(min >= 0)
   require(max >= min)
@@ -51,7 +51,7 @@ case class TextSpan(
 
   val name = tag("BlockPath").headOption.getOrElse("?")
 
-  override val identity = "tfs_%s_%9d_%9d".format(hash, min, max)
+  val identity = "tfs_%s_%9d_%9d".format(hash, min, max)
 
   override def addTag(tag: Tag): TextSpan =
     new TextSpan(data, hash, min, max, ArrSeq(tag) ++ tags, spans)
