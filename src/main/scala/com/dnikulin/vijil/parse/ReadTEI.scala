@@ -177,9 +177,6 @@ object ReadTEI {
     case Elem(null, "head", _, _, _*) =>
       ArrSeq(TeiSpan.head)
 
-    case Elem(null, "p", _, _, _*) =>
-      ArrSeq(TeiSpan.paragraph)
-
     case Elem(null, "q", _, _, _*) =>
       ArrSeq(TeiSpan.quote)
 
@@ -230,9 +227,6 @@ object ReadTEI {
 }
 
 object TeiSpan {
-  def paragraph(nodes: NodeSeq): NodeSeq =
-    <div class="tei_paragraph">{nodes}</div>
-
   def quote(nodes: NodeSeq): NodeSeq =
     <span class="tei_quote">{nodes}</span>
 
