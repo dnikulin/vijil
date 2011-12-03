@@ -243,11 +243,10 @@ object TeiSpan {
     <li class="tei_list_item">{nodes}</li>
 
   def note(nodes: NodeSeq): NodeSeq = {
-    val string = ReadTEI.cleanText(nodes).trim
-    <div class="tei_note" title={string}>Note</div>
+    <span class="tei_note">{nodes}</span>
   }
 
   def page(number: Int)(nodes: NodeSeq): NodeSeq = {
-    <div class="tei_note">Page {number}</div>
+    <div class="tei_page">Page {number}</div>
   }
 }
