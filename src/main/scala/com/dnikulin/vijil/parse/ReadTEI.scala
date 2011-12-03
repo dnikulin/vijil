@@ -35,6 +35,9 @@ import com.dnikulin.vijil.tools.CleanString
 object ReadTEI {
   import CleanString._
 
+  private val paragraphTag =
+    Tag("BlockLevel", "paragraph")
+
   def readTeiNode(tei: Node, hash: String): Option[TextFile] = tei match {
     case Elem(null, teiName, _, _, _*) if teiName.startsWith("TEI") =>
       for (teiHeader <- (tei \ "teiHeader").headOption;
@@ -73,6 +76,9 @@ object ReadTEI {
     // Buffer for runes.
     val runes = ArrSeq.newBuilder[Rune]
 
+    // Paragraph counter within a <div>
+    var npar  = 0
+
     // Prepare extraction inner function.
     def extract(node: Node): IndexedSeq[TextSpan] = node match {
       case Text(string) =>
@@ -97,10 +103,29 @@ object ReadTEI {
         val cmax  = cursor
 
         // Create tags, keep only non-empty tags.
-        val tags = nodeTags(node).filter(_.value.length > 0)
+        val tags = ArrSeq.newBuilder[Tag]
+        tags   ++= nodeTags(node).filter(_.value.length > 0)
 
-        // Create text span with these tags, trim it.
-        val span = new TextSpan(data, hash, cmin, cmax, tags, parts)
+        // Check for <div> and <p> to manage paragraphs.
+        node match {
+          case Elem(null, "div", _, _, _*) =>
+            // Reset paragraph counter.
+            npar = 0
+
+          case Elem(null, "p", _, _, _*) =>
+            // Increment paragraph counter.
+            npar += 1
+
+            // Add paragraph tags.
+            tags += paragraphTag
+            tags += Tag("BlockName", npar.toString)
+
+          case _ =>
+            // Ignore.
+        }
+
+        // Create text span with these tags.
+        val span = new TextSpan(data, hash, cmin, cmax, tags.result, parts)
 
         // Create trimmed version of this span.
         val trim = span.trim
