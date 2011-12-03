@@ -99,11 +99,14 @@ object ReadTEI {
         // Create tags, keep only non-empty tags.
         val tags = nodeTags(node).filter(_.value.length > 0)
 
-        // Create text span with these tags.
+        // Create text span with these tags, trim it.
         val span = new TextSpan(data, hash, cmin, cmax, tags, parts)
 
+        // Create trimmed version of this span.
+        val trim = span.trim
+
         // Create any node spans.
-        marks ++= nodeSpans(node).map(NodeSpan(span, _))
+        marks ++= nodeSpans(node).map(NodeSpan(trim, _, 1000))
 
         // Create any text runes.
         runes ++= nodeRunes(node, cursor)
