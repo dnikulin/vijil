@@ -31,20 +31,20 @@ public final class SpanMerger implements MatchVisitor {
 
     private TextModel [] txt1s;
     private TextModel [] txt2s;
-    private int      [] off1s;
-    private int      [] off2s;
-    private int      [] len1s;
-    private int      [] len2s;
-    private int         npairs;
-    private int         nclean;
+    private int       [] off1s;
+    private int       [] off2s;
+    private int       [] len1s;
+    private int       [] len2s;
+    private int          npairs;
+    private int          nclean;
 
     public SpanMerger() {
         this.txt1s  = new TextModel [startSize];
         this.txt2s  = new TextModel [startSize];
-        this.off1s  = new int      [startSize];
-        this.off2s  = new int      [startSize];
-        this.len1s  = new int      [startSize];
-        this.len2s  = new int      [startSize];
+        this.off1s  = new int       [startSize];
+        this.off2s  = new int       [startSize];
+        this.len1s  = new int       [startSize];
+        this.len2s  = new int       [startSize];
         this.npairs = 0;
         this.nclean = 0;
     }
@@ -217,10 +217,10 @@ public final class SpanMerger implements MatchVisitor {
             // If an allocation fails, they remain equally unassigned.
             TextModel [] _txt1s = Arrays.copyOf(this.txt1s, nlength);
             TextModel [] _txt2s = Arrays.copyOf(this.txt2s, nlength);
-            int      [] _off1s = Arrays.copyOf(this.off1s, nlength);
-            int      [] _off2s = Arrays.copyOf(this.off2s, nlength);
-            int      [] _len1s = Arrays.copyOf(this.len1s, nlength);
-            int      [] _len2s = Arrays.copyOf(this.len2s, nlength);
+            int       [] _off1s = Arrays.copyOf(this.off1s, nlength);
+            int       [] _off2s = Arrays.copyOf(this.off2s, nlength);
+            int       [] _len1s = Arrays.copyOf(this.len1s, nlength);
+            int       [] _len2s = Arrays.copyOf(this.len2s, nlength);
 
             // Assign arrays without risk of exceptions.
             txt1s = _txt1s;
@@ -311,10 +311,10 @@ public final class SpanMerger implements MatchVisitor {
 
         final TextModel txt1 = txt1s[a];
         final TextModel txt2 = txt2s[a];
-        final int      off1 = off1s[a];
-        final int      off2 = off2s[a];
-        final int      len1 = len1s[a];
-        final int      len2 = len2s[a];
+        final int       off1 = off1s[a];
+        final int       off2 = off2s[a];
+        final int       len1 = len1s[a];
+        final int       len2 = len2s[a];
 
         txt1s[a] = txt1s[b];
         txt2s[a] = txt2s[b];
