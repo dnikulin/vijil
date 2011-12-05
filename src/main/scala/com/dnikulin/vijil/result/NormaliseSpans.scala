@@ -23,10 +23,31 @@ package com.dnikulin.vijil.result
 import com.dnikulin.vijil.model.TextModel
 
 object NormaliseSpans {
+  val domain = SpanDomain.CHARACTERS
+
   def apply(texts: Seq[TextModel], sets: Array[LinkSpanSet]): Array[LinkSpanSet] = {
     // Normalise from symbol domain to character domain.
-    val mapper = new LinkSpanGraph(SpanDomain.CHARACTERS)
+    val mapper = new LinkSpanGraph(domain)
     mapper.normalise(sets, texts.toArray)
     return mapper.result
+  }
+
+  def apply(texts: Seq[TextModel], pairs: Array[ModelSpanPair]): Array[ModelSpanPair] =
+    pairs.flatMap(apply(texts, _))
+
+  def apply(texts: Seq[TextModel], pair: ModelSpanPair): Option[ModelSpanPair] = {
+    for (span1 <- apply(texts, pair.span1);
+         span2 <- apply(texts, pair.span2))
+      yield new ModelSpanPair(span1, span2, pair.code)
+  }
+
+  def apply(texts: Seq[TextModel], span: ModelSpan): Option[ModelSpan] = {
+    assert(span.domain == SpanDomain.SYMBOLS)
+    for (text <- texts.find(_.hash == span.hash)) yield {
+      val cmin = text.minChar(span.min)
+      val cmax = text.maxChar(span.max - 1)
+      val clen = (cmax - cmin)
+      new ModelSpan(span.hash, domain, span.code, cmin, clen)
+    }
   }
 }
