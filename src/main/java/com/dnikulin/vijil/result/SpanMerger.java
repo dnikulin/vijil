@@ -25,7 +25,7 @@ import java.util.Arrays;
 import com.dnikulin.vijil.index.MatchVisitor;
 import com.dnikulin.vijil.model.TextModel;
 
-public final class SpanGraph implements MatchVisitor {
+public final class SpanMerger implements MatchVisitor {
     private static final int startSize =  512;
     private static final int cleanSize = 8192;
 
@@ -38,7 +38,7 @@ public final class SpanGraph implements MatchVisitor {
     private int         npairs;
     private int         nclean;
 
-    public SpanGraph() {
+    public SpanMerger() {
         this.txt1s  = new TextModel [startSize];
         this.txt2s  = new TextModel [startSize];
         this.off1s  = new int      [startSize];
