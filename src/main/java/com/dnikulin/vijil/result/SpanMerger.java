@@ -159,6 +159,32 @@ public final class SpanMerger implements MatchVisitor {
         }
     }
 
+    public synchronized ModelSpanPair[] result() {
+        // Clean before finishing.
+        cleanup();
+        assert(npairs == nclean);
+
+        // Allocate array for pairs.
+        final ModelSpanPair [] pairs = new ModelSpanPair [npairs];
+
+        // Refer to fixed objects.
+        final String     hash1  = text1.hash;
+        final String     hash2  = text2.hash;
+        final SpanDomain domain = SpanDomain.SYMBOLS;
+
+        for (int ipair = 0; ipair < npairs; ipair++) {
+            // Use 1-based pair index as pair code.
+            // The same code is used within each text, and within the set of pairs.
+            final int code = (ipair + 1);
+
+            final ModelSpan span1 = new ModelSpan(hash1, domain, code, off1s[ipair], len1s[ipair]);
+            final ModelSpan span2 = new ModelSpan(hash2, domain, code, off2s[ipair], len2s[ipair]);
+            pairs[ipair] = new ModelSpanPair(span1, span2, code);
+        }
+
+        return pairs;
+    }
+
     @Override
     public synchronized void matched(TextModel text1, TextModel text2, int offset1, int offset2, int length1, int length2) {
         // Verify internal consistency.
