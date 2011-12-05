@@ -27,8 +27,7 @@ import java.lang.Math
 import net.liftweb.json._
 
 import com.dnikulin.vijil.parse.StringSpan
-import com.dnikulin.vijil.result.LinkSpan
-import com.dnikulin.vijil.result.SpanDomain
+import com.dnikulin.vijil.result._
 import com.dnikulin.vijil.tools._
 import com.dnikulin.vijil.traits._
 
@@ -173,9 +172,23 @@ object TextSpan extends FromJson[TextSpan] {
     apply(text, dspan.min, dspan.max)
   }
 
+  def apply(text: TextFile, mspan: ModelSpan): TextSpan = {
+    require(mspan.domain == SpanDomain.CHARACTERS)
+    require(mspan.hash == text.hash)
+    require(mspan.min >= 0)
+    require(mspan.max >= mspan.min)
+    require(mspan.max <= text.data.length)
+    apply(text, mspan.min, mspan.max)
+  }
+
   def apply(texts: Seq[TextFile], dspan: LinkSpan): Option[TextSpan] = {
     require(dspan.set.domain == SpanDomain.CHARACTERS)
     texts.find(_.hash == dspan.hash).map(apply(_, dspan))
+  }
+
+  def apply(texts: Seq[TextFile], mspan: ModelSpan): Option[TextSpan] = {
+    require(mspan.domain == SpanDomain.CHARACTERS)
+    texts.find(_.hash == mspan.hash).map(apply(_, mspan))
   }
 
   override def fromJValue(jv: JValue): Option[TextSpan] = jv match {
