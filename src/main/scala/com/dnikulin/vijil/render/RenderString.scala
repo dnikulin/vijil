@@ -41,7 +41,7 @@ object RenderString {
     val depths = sorted.map(_.depth).toSet.toList.sorted
 
     // Separate spans by depth, keeping them in arrays.
-    val tree = depths.map(depth => sorted.filter(_.depth == depth))
+    val tree = depths.map(depth => wrapZeroChars(sorted.filter(_.depth == depth)))
 
     // Start rendering at shallowest depth.
     return renderTree(root, tree)
@@ -121,5 +121,29 @@ object RenderString {
     }
 
     return nodes.result
+  }
+
+  private def wrapZeroChars(spans: Array[NodeSpan]): Array[NodeSpan] =
+    spans.map(wrapZeroChar)
+
+  private def wrapZeroChar(span: NodeSpan): NodeSpan = {
+    if (span.len < 1) span.copy(wrapper=wrapOnce(span.wrapper))
+    else span
+  }
+
+  // Hack wrapper to make a NodeSpan only effective once.
+  private def wrapOnce(wrap: NodeSpan.Wrap): NodeSpan.Wrap = {
+    var spent = false
+
+    def wrap2(nodes: NodeSeq): NodeSeq = {
+      if (spent == false) {
+        spent = true
+        wrap(nodes)
+      } else {
+        nodes
+      }
+    }
+
+    (wrap2 _)
   }
 }
