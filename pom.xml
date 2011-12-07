@@ -4,7 +4,7 @@
   <groupId>com.dnikulin</groupId>
   <artifactId>vijil</artifactId>
   <packaging>jar</packaging>
-  <version>0.7</version>
+  <version>0.8</version>
   <name>vijil</name>
 
   <properties>
@@ -21,10 +21,6 @@
       <id>scala-tools.releases</id>
       <name>Scala-Tools Dependencies Repository for Releases</name>
       <url>http://scala-tools.org/repo-releases</url>
-    </repository>
-    <repository>
-      <id>zact-java</id>
-      <url>http://zact.googlecode.com/svn/maven/repository/</url>
     </repository>
   </repositories>
 
@@ -66,11 +62,6 @@
       <groupId>org.xerial.snappy</groupId>
       <artifactId>snappy-java</artifactId>
       <version>1.0.3-rc3</version>
-    </dependency>
-    <dependency>
-      <groupId>tokyotyrant</groupId>
-      <artifactId>tokyotyrant</artifactId>
-      <version>0.11.1</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
