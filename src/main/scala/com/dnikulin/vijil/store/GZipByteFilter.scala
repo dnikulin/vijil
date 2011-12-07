@@ -25,12 +25,10 @@ import java.io.ByteArrayOutputStream
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 
-import com.dnikulin.vijil.tools.TryOrNone
-
-object ZipByteStore {
+object GZipByteFilter extends ByteFilter {
   val zipBufferSize = 8192
 
-  def zipBytes(bytes: Array[Byte]): Array[Byte] = {
+  override def apply(bytes: Array[Byte]): Array[Byte] = {
     // Compress into memory buffer.
     val byteBuffer = new ByteArrayOutputStream()
     val zipper = new GZIPOutputStream(byteBuffer, zipBufferSize)
@@ -38,16 +36,10 @@ object ZipByteStore {
     zipper.close()
 
     // Snapshot memory buffer.
-    val zip = byteBuffer.toByteArray()
-    byteBuffer.close()
-
-    val pcent = ((zip.length * 100) / (bytes.length max 1))
-    println("Zipped %d bytes into %d (%d%%)".format(bytes.length, zip.length, pcent))
-
-    return zip
+    return byteBuffer.toByteArray
   }
 
-  def unzipBytes(zip: Array[Byte]): Array[Byte] = {
+  override def unapply(zip: Array[Byte]): Array[Byte] = {
     // Unzip into memory buffer.
     val ibuffer = new ByteArrayInputStream(zip)
     val unzipper = new GZIPInputStream(ibuffer)
@@ -67,35 +59,6 @@ object ZipByteStore {
     ibuffer.close()
 
     // Finish output buffer.
-    val bytes = obuffer.toByteArray()
-    obuffer.close()
-
-    val pcent = ((zip.length * 100) / (bytes.length max 1))
-    println("Unzipped %d bytes into %d (%d%%)".format(zip.length, bytes.length, pcent))
-
-    return bytes
-  }
-}
-
-class ZipByteStore(override val lower: ObjectStore[Array[Byte]])
-  extends ObjectStoreLayer[Array[Byte], Array[Byte]] {
-
-  import ZipByteStore._
-
-  override def put(key: String, bytes: Array[Byte]): Unit = {
-    val zip = zipBytes(bytes)
-    // Pass to next byte store.
-    lower.put(key, zip)
-  }
-
-  override def put(bytes: Array[Byte]): Option[String] = {
-    val zip = zipBytes(bytes)
-    // Pass to next byte store.
-    lower.put(zip)
-  }
-
-  override def get(key: String): Option[Array[Byte]] = TryOrNone {
-    // Fetch from next byte store.
-    lower.get(key).map(unzipBytes)
+    return obuffer.toByteArray
   }
 }
