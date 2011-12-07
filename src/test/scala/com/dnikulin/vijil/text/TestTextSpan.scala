@@ -26,8 +26,6 @@ import net.liftweb.json.Serialization._
 import org.junit.Test
 import org.junit.Assert._
 
-import org.xerial.snappy.Snappy
-
 import com.dnikulin.vijil.tools.ArrSeq
 
 class TestTextSpan {
@@ -94,21 +92,5 @@ class TestTextSpan {
     // Must encode and decode without changes.
     val json2 = span3.toJson
     assertEquals(json1, json2)
-
-    // Must compress well, and in a repeatable form, with Snappy.
-    val snap1 = Snappy.compress(json1)
-    val snap2 = Snappy.compress(json2)
-    assertTrue(snap1.length < json1.length)
-    assertNotSame(snap1, snap2)
-    assertArrayEquals(snap1, snap2)
-
-    // Must uncompress to the original string.
-    val json3 = Snappy.uncompressString(snap1)
-    val json4 = Snappy.uncompressString(snap1)
-    assertNotSame(json1, json3)
-    assertNotSame(json2, json3)
-    assertNotSame(json3, json4)
-    assertEquals (json2, json3)
-    assertEquals (json2, json4)
   }
 }

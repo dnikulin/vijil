@@ -20,18 +20,19 @@
 
 package com.dnikulin.vijil.file;
 
-import java.io.*;
-
-import com.google.common.io.Files;
-
-import org.xerial.snappy.Snappy;
-import org.xerial.snappy.SnappyException;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
 
 import com.dnikulin.vijil.model.TextModel;
 import com.dnikulin.vijil.tools.Empty;
+import com.google.common.io.Files;
 
 public final class TextPack {
-    public static byte[] write(TextModel[] texts, boolean full) throws IOException, SnappyException {
+    public static byte[] write(TextModel[] texts, boolean full) throws IOException {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         DataOutputStream out = new DataOutputStream(bytes);
 
@@ -58,27 +59,19 @@ public final class TextPack {
         }
 
         out.flush();
-        byte[] plain = bytes.toByteArray();
-        return Snappy.compress(plain);
+        return bytes.toByteArray();
     }
 
-    public static TextModel[] read(byte[] bytes) throws IOException, SnappyException {
+    public static TextModel[] read(byte[] bytes) throws IOException {
         // Basic sanity checks.
 
         if (bytes == null)
             return TextModel.none;
 
-        if (bytes.length < 100)
+        if (bytes.length < 10)
             return TextModel.none;
 
-        if (Snappy.isValidCompressedBuffer(bytes, 0, bytes.length) == false)
-            return TextModel.none;
-
-        // Full in-memory decompression and decoding.
-
-        byte[] plain = Snappy.uncompress(bytes);
-
-        ByteArrayInputStream stream = new ByteArrayInputStream(plain);
+        ByteArrayInputStream stream = new ByteArrayInputStream(bytes);
         DataInputStream in = new DataInputStream(stream);
 
         final int ntexts = in.readInt();
@@ -126,7 +119,7 @@ public final class TextPack {
         return texts;
     }
 
-    public static TextModel[] read(File file) throws IOException, SnappyException {
+    public static TextModel[] read(File file) throws IOException {
         byte[] bytes = Files.toByteArray(file);
         return read(bytes);
     }
