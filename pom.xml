@@ -50,7 +50,7 @@
     </dependency>
     <dependency>
       <groupId>net.liftweb</groupId>
-      <artifactId>lift-util_${scala.version}</artifactId>
+      <artifactId>lift-mapper_${scala.version}</artifactId>
       <version>${lift.version}</version>
     </dependency>
     <dependency>
