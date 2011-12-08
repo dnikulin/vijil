@@ -31,7 +31,7 @@ import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.util.Version;
 
 public class PorterAnalyzer extends ReusableAnalyzerBase {
-    public static final Version VERSION = Version.LUCENE_33;
+    public static final Version VERSION = Version.LUCENE_35;
 
     public static final int MAX_TOKEN_LENGTH = 255;
 

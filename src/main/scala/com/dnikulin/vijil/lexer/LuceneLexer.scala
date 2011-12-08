@@ -35,7 +35,7 @@ import com.dnikulin.vijil.text.TextFile
 
 class LuceneLexer extends SimpleTextLexer {
   protected def newAnalyzer(): Analyzer =
-    new StandardAnalyzer(Version.LUCENE_33)
+    new StandardAnalyzer(Version.LUCENE_35)
 
   protected def termToSymbol(term: String): Int =
     ((term.hashCode & 0x3ffffff0) + Symbols.offset)
