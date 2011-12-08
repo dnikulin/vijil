@@ -86,6 +86,12 @@ Combines several TextModel objects into a single linear tape, useful for creatin
 com.dnikulin.vijil.index (Scala)
 ================================
 
+SearchLinkCloud.scala
+---------------------
+
+Simple high-level function to chain Mindex/Stencils with SpanMerger to produce ModelSpanPair sequences.  This should be subsumed by a newer SearchSplit architecture.
+
+
 SearchPair.scala
 ----------------
 
@@ -331,10 +337,28 @@ LinkSpanSet.java
 A set of LinkSpans.
 
 
+ModelSpan.java
+--------------
+
+A simple immutable span for a text model, in any given domain.
+
+
+ModelSpanPair.java
+------------------
+
+A simple immutable pair of ModelSpans.
+
+
 SpanDomain.java
 ---------------
 
 Enum describing the domain of a LinkSpan, such as symbol domain or character domain.
+
+
+SpanMerger.java
+---------------
+
+An alternative to LinkSpanGraph, simply merges span pairs into larger span pairs, only where both sides of the pairs overlap.
 
 
 com.dnikulin.vijil.result (Scala)
@@ -367,6 +391,15 @@ ReadXHTML.scala
 ---------------
 
 Script to repair digitisation damage done to "Commentaries on the Laws of England", producing Factotum XML files for each of several editions.
+
+
+com.dnikulin.vijil.store (Java)
+===============================
+
+ByteFilter.java
+---------------
+
+A simple filter interface for byte arrays, such as compression or encryption.  Unlike a stream, the filter must be stateless and operate on entire byte arrays at once, providing a functional interface.
 
 
 com.dnikulin.vijil.store (Scala)
@@ -408,46 +441,46 @@ FileByteStore.scala
 A byte array store that stores files in a directory.
 
 
+FilterByteStore.scala
+---------------------
+
+A byte array store that passes arrays in and out of a ByteFilter, such as a compressor.
+
+
+GZipStack.scala
+---------------
+
+Convenience builder function for GZipByteFilter stores.
+
+
+GZipByteFilter.scala
+--------------------
+
+A compressing ByteFilter using GZIPOutputStream and GZIPInputStream.
+
+
+JsonStack.scala
+---------------
+
+Convenience builder function for JsonStore stores.
+
+
 JsonStore.scala
 ---------------
 
 A store that serialises and de-serialises objects using lift-json.  The architecture here is not ideal - there are ways in which using lift-json's own format architecture may be simpler (though somewhat slower due to its heavy use of reflection).
 
 
-SnapByteStore.scala
--------------------
+MapperByteStore.scala
+---------------------
 
-A compressing ByteStore using Google Snappy.
-
-
-SnappyStack.scala
------------------
-
-A byte storage stack combining SnapByteStore and TokyoStore.
+Trait that allows a Lift Mapper table to act as a ByteStore, containing storedHash and storedData attributes, and allowing additional attributes.
 
 
 StoredSet.scala
 ---------------
 
 A string "set" stored on an arbitrary byte array store (the stored objects are byte arrays of length 0).
-
-
-TokyoStack.scala
-----------------
-
-An object storage stack combining CacheStore, JsonStore, SnapByteStore and TokyoStore.  This is used for stored texts and stored reports in Factotum.
-
-
-TokyoStore.scala
-----------------
-
-Adapts <a href="http://code.google.com/p/tokyotyrant-java/">tokyotyrant-java</a> to act as a ByteStore.  This should be removed, because tokyotyrant-java appears to be unmaintained.
-
-
-ZipByteStore.scala
-------------------
-
-A compressing ByteStore using GZIPOutputStream and GZIPInputStream.
 
 
 com.dnikulin.vijil.text (Scala)
